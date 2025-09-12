@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Заказ #{{ order.id }} - Книжный магазин{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Информация о заказе -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="fas fa-receipt me-2"></i>Заказ #{{ order.id }}
+                    <span class="badge bg-{% if order.status == 'delivered' %}success{% elif order.status == 'cancelled' %}danger{% else %}warning{% endif %} float-end">
+                        {{ order.get_status_display }}
+                    </span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6>Информация о заказе</h6>
+                        <p class="mb-1"><strong>Дата заказа:</strong> {{ order.created_at|date:"d.m.Y H:i" }}</p>
+                        <p class="mb-1"><strong>Общая сумма:</strong> {{ order.total_amount }} ₽</p>
+                        <p class="mb-0"><strong>Статус:</strong> {{ order.get_status_display }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Адрес доставки</h6>
+                        <p class="mb-0">{{ order.shipping_address|linebreaks }}</p>
+                    </div>
+                </div>
+
+                <h6>Состав заказа</h6>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Товар</th>
+                                <th class="text-end">Цена</th>
+                                <th class="text-center">Кол-во</th>
+                                <th class="text-end">Сумма</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.items.all %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if item.book.image %}
+                                        <img src="{{ item.book.image.url }}" alt="{{ item.book.title }}" 
+                                             class="img-thumbnail me-3" style="width: 50px; height: 70px; object-fit: cover;">
+                                        {% else %}
+                                        <div class="img-thumbnail me-3 d-flex align-items-center justify-content-center" 
+                                             style="width: 50px; height: 70px; background: #f8f9fa;">
+                                            <i class="fas fa-book text-muted"></i>
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <strong>{{ item.book.title }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ item.book.author.first_name }} {{ item.book.author.last_name }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-end">{{ item.price }} ₽</td>
+                                <td class="text-center">{{ item.quantity }}</td>
+                                <td class="text-end"><strong>{{ item.get_total_price }} ₽</strong></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-group-divider">
+                            <tr>
+                                <td colspan="3" class="text-end"><strong>Итого:</strong></td>
+                                <td class="text-end"><strong>{{ order.total_amount }} ₽</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- История статусов -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h6 class="mb-0"><i class="fas fa-history me-2"></i>История статусов</h6>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <!-- Элементы таймлайна можно было бы генерировать динамически на основе реальной истории -->
+                    <div class="timeline-item {% if order.status == 'delivered' %}active{% endif %}">
+                        <div class="timeline-point"></div>
+                        <div class="timeline-content">
+                            <h6 class="mb-1">Доставлен</h6>
+                            <small class="text-muted">Заказ доставлен покупателю</small>
+                        </div>
+                    </div>
+                    <div class="timeline-item {% if order.status == 'shipped' %}active{% endif %}">
+                        <div class="timeline-point"></div>
+                        <div class="timeline-content">
+                            <h6 class="mb-1">Отправлен</h6>
+                            <small class="text-muted">Заказ передан в службу доставки</small>
+                        </div>
+                    </div>
+                    <div class="timeline-item {% if order.status == 'processing' %}active{% endif %}">
+                        <div class="timeline-point"></div>
+                        <div class="timeline-content">
+                            <h6 class="mb-1">Обработка</h6>
+                            <small class="text-muted">Заказ обрабатывается</small>
+                        </div>
+                    </div>
+                    <div class="timeline-item active">
+                        <div class="timeline-point"></div>
+                        <div class="timeline-content">
+                            <h6 class="mb-1">Создан</h6>
+                            <small class="text-muted">{{ order.created_at|date:"d.m.Y H:i" }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Действия с заказом -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h6 class="mb-0">Действия</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'order_list' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>К списку заказов
+                    </a>
+                    {% if order.status == 'pending' or order.status == 'processing' %}
+                    <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelOrderModal">
+                        <i class="fas fa-times me-2"></i>Отменить заказ
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Контактная информация -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h6 class="mb-0"><i class="fas fa-headset me-2"></i>Контактная информация</h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-2"><strong>Служба поддержки:</strong></p>
+                <p class="mb-1"><i class="fas fa-phone me-2"></i>+7 (800) 123-45-67</p>
+                <p class="mb-0"><i class="fas fa-envelope me-2"></i>support@bookstore.ru</p>
+                <hr>
+                <p class="mb-0 small text-muted">Свяжитесь с нами, если у вас возникли вопросы по поводу вашего заказа. Укажите номер заказа (#{{ order.id }}) для быстрого решения вопроса.</p>
+            </div>
+        </div>
+
+        <!-- Информация о покупателе -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h6 class="mb-0"><i class="fas fa-user me-2"></i>Информация о покупателе</h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-1"><strong>Имя:</strong> {{ order.user.get_full_name|default:order.user.username }}</p>
+                <p class="mb-1"><strong>Email:</strong> {{ order.user.email }}</p>
+                <p class="mb-0"><strong>Телефон:</strong> {{ order.phone_number|default:"Не указан" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для отмены заказа -->
+<div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelOrderModalLabel">Отмена заказа</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите отменить заказ #{{ order.id }}?</p>
+                <p class="text-muted small">Эта операция не может быть отменена. Если заказ уже собран для отправки, его отмена может быть невозможна.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <form action="{% url 'order_cancel' order.id %}" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Да, отменить заказ</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Стили для временной линии */
+    .timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+    .timeline-item {
+        position: relative;
+        padding-bottom: 1.5rem;
+    }
+    .timeline-point {
+        position: absolute;
+        left: -2rem;
+        top: 0.3rem;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background-color: #dee2e6;
+        z-index: 2;
+    }
+    .timeline-item.active .timeline-point {
+        background-color: #0d6efd;
+        box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.25);
+    }
+    .timeline:before {
+        content: '';
+        position: absolute;
+        left: -1.5rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background-color: #dee2e6;
+    }
+</style>
+{% endblock %}

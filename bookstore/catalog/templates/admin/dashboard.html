@@ -1,51 +1,201 @@
 {% extends 'admin/base.html' %}
+{% load static %}
 
 {% block page_title %}Дашборд{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin-dashboard.css' %}">
+<style>
+    .chart-container {
+        position: relative;
+        height: 250px;
+        margin-bottom: 20px;
+    }
+    .stat-card {
+        position: relative;
+        padding: 20px;
+        border-radius: 12px;
+        color: white;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+    .stat-card:hover {
+        transform: translateY(-2px);
+    }
+    .stat-number {
+        font-size: 2.5em;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .stat-label {
+        font-size: 0.9em;
+        opacity: 0.9;
+    }
+    .stat-icon {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 2em;
+        opacity: 0.3;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="row">
     <!-- Статистика -->
     <div class="col-md-3">
-        <div class="stat-card">
+        <div class="stat-card bg-primary">
             <div class="stat-number">{{ total_books }}</div>
             <div class="stat-label">Книг</div>
+            <i class="fas fa-book stat-icon"></i>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="stat-card">
+        <div class="stat-card bg-success">
             <div class="stat-number">{{ total_orders }}</div>
             <div class="stat-label">Заказов</div>
+            <i class="fas fa-shopping-cart stat-icon"></i>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="stat-card">
+        <div class="stat-card bg-info">
             <div class="stat-number">{{ total_users }}</div>
             <div class="stat-label">Пользователей</div>
+            <i class="fas fa-users stat-icon"></i>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="stat-card">
+        <div class="stat-card bg-warning text-dark">
             <div class="stat-number">{{ total_revenue }} ₽</div>
             <div class="stat-label">Выручка</div>
+            <i class="fas fa-ruble-sign stat-icon"></i>
         </div>
     </div>
 </div>
 
 <div class="row mt-4">
+    <!-- График продаж -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Продажи за последние 7 дней</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- График статусов заказов -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Статусы заказов</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="orderStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <!-- График популярных категорий -->
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">
-                <h5>Последние заказы</h5>
+                <h5 class="mb-0">Популярные категории</h5>
             </div>
             <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Боковая панель с действиями и уведомлениями -->
+    <div class="col-md-6">
+        <!-- Последние действия -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-history me-2"></i>Последние действия</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for action in recent_actions %}
+                    <div class="list-group-item action-item 
+                                {% if action.action_flag == 1 %}action-addition
+                                {% elif action.action_flag == 2 %}action-change
+                                {% elif action.action_flag == 3 %}action-deletion
+                                {% endif %}">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ action.user.get_full_name|default:action.user.username }}</h6>
+                            <small class="text-muted">{{ action.action_time|timesince }} назад</small>
+                        </div>
+                        <p class="mb-1 small">{{ action.formatted_action }}</p>
+                        <small class="text-muted">{{ action.content_type|capfirst }}</small>
+                    </div>
+                    {% empty %}
+                    <div class="list-group-item text-center text-muted py-4">
+                        <i class="fas fa-history fa-2x mb-2"></i>
+                        <p>Нет действий для отображения</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <!-- Книги с низким запасом -->
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Книги с низким запасом</h5>
+                <span class="badge bg-danger">{{ low_stock_books|length }}</span>
+            </div>
+            <div class="card-body p-0">
+                {% for book in low_stock_books %}
+                <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="my-0">{{ book.title|truncatewords:4 }}</h6>
+                        <small class="text-muted">{{ book.author.first_name }} {{ book.author.last_name }}</small>
+                    </div>
+                    <span class="badge bg-warning">{{ book.stock_quantity }} шт.</span>
+                </div>
+                {% empty %}
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-box-open fa-2x mb-2"></i>
+                    <p>Нет книг с низким запасом</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Последние заказы -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Последние заказы</h5>
+            </div>
+            <div class="card-body p-0">
                 {% for order in latest_orders %}
-                <div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom">
+                <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
                     <div>
                         <strong>#{{ order.id }}</strong>
-                        <small class="text-muted d-block">{{ order.user.username }}</small>
+                        <small class="text-muted d-block">{{ order.user.username|truncatechars:15 }}</small>
                     </div>
                     <div class="text-end">
-                        <span class="status-badge status-{{ order.status }}">
+                        <span class="badge bg-{% if order.status == 'delivered' %}success{% elif order.status == 'cancelled' %}danger{% else %}warning{% endif %}">
                             {{ order.get_status_display }}
                         </span>
                         <div class="text-muted small">{{ order.total_amount }} ₽</div>
@@ -55,43 +205,106 @@
             </div>
         </div>
     </div>
-    
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5>Книги с низким запасом</h5>
-            </div>
-            <div class="card-body">
-                {% for book in low_stock_books %}
-                <div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom">
-                    <div>{{ book.title }}</div>
-                    <span class="badge bg-warning">{{ book.stock_quantity }} шт.</span>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
 </div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // График продаж
+    const salesCtx = document.getElementById('salesChart').getContext('2d');
+    const salesChart = new Chart(salesCtx, {
+        type: 'line',
+        data: {
+            labels: {{ sales_dates|safe }},
+            datasets: [{
+                label: 'Продажи (₽)',
+                data: {{ sales_data }},
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
 
-<div class="row mt-4">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-header">
-                <h5>Статистика заказов</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    {% for stat in order_stats %}
-                    <div class="col-md-2 text-center">
-                        <div class="stat-number">{{ stat.count }}</div>
-                        <span class="status-badge status-{{ stat.status }}">
-                            {{ stat.status }}
-                        </span>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+    // График популярных категорий
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    const categoryChart = new Chart(categoryCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ category_labels|safe }},
+            datasets: [{
+                label: 'Количество книг',
+                data: {{ category_data }},
+                backgroundColor: {{ category_colors|safe }},
+                borderWidth: 0,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Анимация при скролле
+    document.addEventListener('DOMContentLoaded', function() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        });
+
+        document.querySelectorAll('.stat-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'all 0.6s ease';
+            observer.observe(card);
+        });
+    });
+</script>
 {% endblock %}

@@ -1,3 +1,4 @@
+import json
 from django.http import HttpResponseForbidden
 from django.shortcuts import render
 
@@ -11,6 +12,7 @@ from django.core.paginator import Paginator
 from .models import Book, Category, Author, Order, OrderItem, Cart, CartItem
 from .forms import LoginForm, RegisterForm, UserProfileForm, OrderForm
 from django.contrib.auth.views import LoginView
+from django.contrib.admin.models import LogEntry
 
 def home(request):
     # Новые книги
@@ -248,6 +250,38 @@ def order_list(request):
     orders = Order.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'catalog/order_list.html', {'orders': orders})
 
+# @require_POST # Разрешаем только POST-запросы
+@login_required
+def order_cancel(request, order_id):
+    # Получаем заказ или возвращаем 404
+    # Важно: фильтруем по текущему пользователю, чтобы нельзя было отменить чужой заказ!
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    
+    # Проверяем, можно ли отменить заказ (например, только из определенных статусов)
+    if order.status not in ['pending', 'processing']:
+        messages.error(request, f'Невозможно отменить заказ №{order_id} в статусе "{order.get_status_display()}".')
+        return redirect('order_detail', order_id=order.id)
+    
+    # Логика отмены
+    try:
+        # Меняем статус заказа
+        order.status = 'cancelled'
+        order.save()
+        
+        # Здесь можно добавить другую логику, например:
+        # - Отправить email уведомление
+        # - Вернуть товары на склад (увеличить stock)
+        # - Инициировать возврат денег через платежную систему
+        
+        messages.success(request, f'Заказ №{order_id} был успешно отменен.')
+    
+    except Exception as e:
+        # Ловим возможные ошибки при сохранении
+        messages.error(request, f'Произошла ошибка при отмене заказа: {e}')
+    
+    # Перенаправляем обратно на страницу деталей заказа
+    return redirect('order_detail', order_id=order.id)
+
 @login_required
 def admin_access_required(request):
     if not request.user.is_admin():
@@ -281,10 +315,61 @@ def admin_required(view_func):
         return view_func(request, *args, **kwargs)
     return _wrapped_view
 
-@admin_required
 def admin_dashboard(request):
     # Статистика за последние 30 дней
     thirty_days_ago = timezone.now() - timedelta(days=30)
+
+    recent_actions = []
+    log_entries = LogEntry.objects.select_related('user', 'content_type').order_by('-action_time')[:10]
+    
+    for action in log_entries:
+        action_dict = {
+            LogEntry.ADDITION: 'Добавлен',
+            LogEntry.CHANGE: 'Изменен',
+            LogEntry.DELETION: 'Удален'
+        }
+        
+        action_name = action_dict.get(action.action_flag, 'Действие')
+        object_name = str(action.object_repr)
+        
+        if len(object_name) > 30:
+            object_name = object_name[:27] + '...'
+        
+        formatted_action = f"{action_name} {action.content_type}: {object_name}"
+        
+        recent_actions.append({
+            'user': action.user,
+            'action_time': action.action_time,
+            'formatted_action': formatted_action,
+            'content_type': action.content_type.model,
+            'action_flag': action.action_flag
+        })
+    # Данные для графиков
+    # График продаж по дням за последние 7 дней
+    sales_data = []
+    dates = []
+    for i in range(6, -1, -1):
+        date = timezone.now() - timedelta(days=i)
+        daily_sales = Order.objects.filter(
+            created_at__date=date.date(),
+            status='delivered'
+        ).aggregate(total=Sum('total_amount'))['total'] or 0
+        sales_data.append(float(daily_sales))
+        dates.append(date.strftime('%d.%m'))
+    
+    
+    # График популярных категорий
+    category_data = []
+    category_labels = []
+    category_colors = ['#ff6384', '#36a2eb', '#ffcd56', '#4bc0c0', '#9966ff', '#ff9f40', '#c9cbcf']
+    
+    popular_categories = Category.objects.annotate(
+        book_count=Count('books')
+    ).order_by('-book_count')[:5]
+    
+    for category in popular_categories:
+        category_data.append(category.book_count)
+        category_labels.append(category.name)
     
     context = {
         'total_books': Book.objects.count(),
@@ -305,10 +390,18 @@ def admin_dashboard(request):
         'latest_orders': Order.objects.select_related('user').order_by('-created_at')[:10],
         
         'low_stock_books': Book.objects.filter(stock_quantity__lt=10).order_by('stock_quantity')[:5],
+        
+        # Данные для графиков
+        'sales_data': sales_data,
+        'sales_dates': dates,
+        'category_data': category_data,
+        'category_labels': category_labels,
+        'category_colors': category_colors,
+
+        'recent_actions': recent_actions,
     }
     
     return render(request, 'admin/dashboard.html', context)
-
 @admin_required
 def admin_books(request):
     books = Book.objects.select_related('author', 'publisher').prefetch_related('categories').all()
