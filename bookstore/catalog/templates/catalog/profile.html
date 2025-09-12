@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+
+{% block title %}Мой профиль - Книжный магазин{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Боковая панель профиля -->
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                <div class="mb-4">
+                    <div class="profile-avatar rounded-circle d-inline-flex align-items-center justify-content-center">
+                        <i class="fas fa-user fa-2x text-white"></i>
+                    </div>
+                </div>
+                
+                <h4 class="mb-1">{{ user.get_full_name|default:user.username }}</h4>
+                <p class="text-muted mb-3">@{{ user.username }}</p>
+                
+                <div class="d-grid gap-2">
+                    <a href="{% url 'order_list' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-shopping-bag me-2"></i>Мои заказы
+                    </a>
+                    <a href="{% url 'cart' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-shopping-cart me-2"></i>Корзина
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Статистика -->
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-transparent">
+                <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Статистика</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Заказов:</span>
+                    <strong class="text-primary">{{ orders.count }}</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">В корзине:</span>
+                    <strong class="text-primary">{{ cart_items_count }} шт.</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted">С нами с:</span>
+                    <strong>{{ user.date_joined|date:"d.m.Y" }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основная информация -->
+    <div class="col-md-8">
+        <!-- Личная информация -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-transparent">
+                <h5 class="mb-0"><i class="fas fa-user-circle me-2"></i>Личная информация</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'profile' %}">
+            {% csrf_token %}
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="id_first_name" class="form-label">Имя</label>
+                    <input type="text" class="form-control" id="id_first_name" name="first_name" 
+                           value="{{ user.first_name|default:'' }}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="id_last_name" class="form-label">Фамилия</label>
+                    <input type="text" class="form-control" id="id_last_name" name="last_name" 
+                           value="{{ user.last_name|default:'' }}">
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="id_email" class="form-label">Email *</label>
+                <input type="email" class="form-control" id="id_email" name="email" 
+                       value="{{ user.email|default:'' }}" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="id_phone" class="form-label">Телефон</label>
+                <input type="tel" class="form-control" id="id_phone" name="phone" 
+                       value="{{ user.phone|default:'' }}">
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="id_country" class="form-label">Страна</label>
+                    <input type="text" class="form-control" id="id_country" name="country" 
+                           value="{{ user.country|default:'Россия' }}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="id_city" class="form-label">Город</label>
+                    <input type="text" class="form-control" id="id_city" name="city" 
+                           value="{{ user.city|default:'' }}">
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="id_postal_code" class="form-label">Почтовый индекс</label>
+                    <input type="text" class="form-control" id="id_postal_code" name="postal_code" 
+                           value="{{ user.postal_code|default:'' }}">
+                </div>
+                <div class="col-md-8 mb-3">
+                    <label for="id_address" class="form-label">Адрес</label>
+                    <input type="text" class="form-control" id="id_address" name="address" 
+                           value="{{ user.address|default:'' }}">
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+        </form>
+            </div>
+        </div>
+
+
+        <!-- Последние заказы -->
+        {% if orders %}
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-transparent">
+                <h5 class="mb-0"><i class="fas fa-history me-2"></i>Последние заказы</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>№ заказа</th>
+                                <th>Дата</th>
+                                <th>Сумма</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders|slice:":3" %}
+                            <tr>
+                                <td><strong>#{{ order.id }}</strong></td>
+                                <td>{{ order.created_at|date:"d.m.Y H:i" }}</td>
+                                <td>{{ order.total_amount }} ₽</td>
+                                <td>
+                                    <span class="badge bg-{% if order.status == 'delivered' %}success{% elif order.status == 'cancelled' %}danger{% else %}warning{% endif %}">
+                                        {{ order.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if orders.count > 3 %}
+                <div class="text-center mt-3">
+                    <a href="{% url 'order_list' %}" class="btn btn-outline-primary btn-sm">
+                        Все заказы <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        transition: transform 0.3s ease;
+    }
+    .profile-avatar:hover {
+        transform: scale(1.05);
+    }
+    .card {
+        border: none;
+        border-radius: 15px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+    }
+    .form-control {
+        border-radius: 10px;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    .btn {
+        border-radius: 10px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    .table th {
+        background: #f8f9fa;
+        border: none;
+        font-weight: 600;
+        color: #6c757d;
+    }
+    .table td {
+        vertical-align: middle;
+    }
+</style>
+{% endblock %}

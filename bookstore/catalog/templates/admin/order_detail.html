@@ -1,0 +1,95 @@
+{% extends 'admin/base.html' %}
+
+{% block page_title %}Заказ #{{ order.id }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4>Информация о заказе</h4>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Номер заказа:</strong> #{{ order.id }}<br>
+                        <strong>Пользователь:</strong> {{ order.user.username }}<br>
+                        <strong>Email:</strong> {{ order.user.email }}<br>
+                        <strong>Телефон:</strong> {{ order.user.phone|default:"Не указан" }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Дата создания:</strong> {{ order.created_at|date:"d.m.Y H:i" }}<br>
+                        <strong>Общая сумма:</strong> {{ order.total_amount }} ₽<br>
+                        <strong>Статус:</strong>
+                        <span class="status-badge status-{{ order.status }}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Адрес доставки:</strong>
+                    <p>{{ order.shipping_address }}</p>
+                </div>
+                
+                <!-- Форма изменения статуса -->
+                <form method="post" class="mb-4">
+                    {% csrf_token %}
+                    <div class="row align-items-end">
+                        <div class="col-md-6">
+                            <label class="form-label">Изменить статус:</label>
+                            <select name="status" class="form-select">
+                                {% for status, name in status_choices %}
+                                <option value="{{ status }}" {% if order.status == status %}selected{% endif %}>
+                                    {{ name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <button type="submit" class="btn btn-primary">Обновить статус</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Товары в заказе -->
+        <div class="card">
+            <div class="card-header">
+                <h4>Товары в заказе</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Книга</th>
+                                <th>Цена</th>
+                                <th>Количество</th>
+                                <th>Сумма</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.items.all %}
+                            <tr>
+                                <td>{{ item.book.title }}</td>
+                                <td>{{ item.price }} ₽</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.get_total_price }} ₽</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-end"><strong>Итого:</strong></td>
+                                <td><strong>{{ order.total_amount }} ₽</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

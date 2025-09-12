@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block title %}Корзина - Книжный магазин{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Товары в корзине -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-shopping-cart"></i> Корзина покупок
+                    <span class="badge bg-primary ms-2">{{ cart.items.count }}</span>
+                </h4>
+            </div>
+            <div class="card-body">
+                {% if cart.items.all %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Товар</th>
+                                <th>Цена</th>
+                                <th>Количество</th>
+                                <th>Сумма</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in cart.items.all %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if item.book.image %}
+                                        <img src="{{ item.book.image.url }}" alt="{{ item.book.title }}" 
+                                             class="img-thumbnail me-3" style="width: 60px; height: 80px; object-fit: cover;">
+                                        {% else %}
+                                        <div class="img-thumbnail me-3 d-flex align-items-center justify-content-center" 
+                                             style="width: 60px; height: 80px; background: #f8f9fa;">
+                                            <i class="fas fa-book text-muted"></i>
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <h6 class="mb-0">{{ item.book.title }}</h6>
+                                            <small class="text-muted">{{ item.book.author.first_name }} {{ item.book.author.last_name }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ item.book.price }} ₽</td>
+                                <td>
+                                    <form method="post" action="{% url 'update_cart' item.id %}" class="d-flex align-items-center">
+                                        {% csrf_token %}
+                                        <input type="number" name="quantity" value="{{ item.quantity }}" 
+                                               min="1" max="{{ item.book.stock_quantity }}" 
+                                               class="form-control form-control-sm" style="width: 80px;">
+                                        <button type="submit" class="btn btn-sm btn-outline-primary ms-2">
+                                            <i class="fas fa-sync-alt"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                                <td>{{ item.total_price }} ₽</td>
+                                <td>
+                                    <form method="post" action="{% url 'remove_from_cart' item.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                onclick="return confirm('Удалить товар из корзины?')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'book_list' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left"></i> Продолжить покупки
+                    </a>
+                    <form method="post" action="{% url 'cart' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger" name="clear_cart"
+                                onclick="return confirm('Очистить всю корзину?')">
+                            <i class="fas fa-trash"></i> Очистить корзину
+                        </button>
+                    </form>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-shopping-cart fa-4x text-muted"></i>
+                    </div>
+                    <h4>Корзина пуста</h4>
+                    <p class="text-muted">Добавьте товары в корзину, чтобы продолжить покупки</p>
+                    <a href="{% url 'book_list' %}" class="btn btn-primary">
+                        <i class="fas fa-book"></i> Перейти к книгам
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Итоговая информация -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Итог заказа</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Товары ({{ cart.total_items }}):</span>
+                    <span>{{ cart.total_price }} ₽</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Доставка:</span>
+                    <span class="text-success">Бесплатно</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between mb-3">
+                    <strong>Итого:</strong>
+                    <strong class="text-primary">{{ cart.total_price }} ₽</strong>
+                </div>
+
+                {% if cart.items.all %}
+                <div class="d-grid">
+                    <a href="{% url 'checkout' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-credit-card"></i> Перейти к оформлению
+                    </a>
+                </div>
+                {% else %}
+                <div class="d-grid">
+                    <button class="btn btn-primary btn-lg" disabled>
+                        <i class="fas fa-credit-card"></i> Перейти к оформлению
+                    </button>
+                </div>
+                {% endif %}
+
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle"></i> Бесплатная доставка при заказе от 1000 ₽
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Преимущества -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <h6 class="mb-3">Преимущества покупок у нас:</h6>
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-truck text-primary me-2"></i>
+                    <small>Быстрая доставка</small>
+                </div>
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-shield-alt text-primary me-2"></i>
+                    <small>Гарантия качества</small>
+                </div>
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-undo text-primary me-2"></i>
+                    <small>Легкий возврат</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Автоматическое обновление количества при изменении
+    document.addEventListener('DOMContentLoaded', function() {
+        const quantityInputs = document.querySelectorAll('input[name="quantity"]');
+        quantityInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                this.form.submit();
+            });
+        });
+    });
+</script>
+{% endblock %}

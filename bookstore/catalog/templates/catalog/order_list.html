@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}Мои заказы - Книжный магазин{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-shopping-bag me-2"></i>Мои заказы</h2>
+            <span class="badge bg-primary">{{ orders.count }} заказ(ов)</span>
+        </div>
+
+        {% if orders %}
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>№ заказа</th>
+                                <th>Дата</th>
+                                <th>Товары</th>
+                                <th>Сумма</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <td>
+                                    <strong>#{{ order.id }}</strong>
+                                </td>
+                                <td>
+                                    <small>{{ order.created_at|date:"d.m.Y" }}</small>
+                                    <br>
+                                    <small class="text-muted">{{ order.created_at|date:"H:i" }}</small>
+                                </td>
+                                <td>
+                                    <small>
+                                        {% for item in order.items.all|slice:":2" %}
+                                        {{ item.book.title }}{% if not forloop.last %}, {% endif %}
+                                        {% endfor %}
+                                        {% if order.items.count > 2 %}...{% endif %}
+                                    </small>
+                                    <br>
+                                    <small class="text-muted">{{ order.items.count }} товар(ов)</small>
+                                </td>
+                                <td>
+                                    <strong>{{ order.total_amount }} ₽</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if order.status == 'delivered' %}success{% elif order.status == 'cancelled' %}danger{% else %}warning{% endif %}">
+                                        {{ order.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Пагинация -->
+        {% if orders.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if orders.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ orders.previous_page_number }}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in orders.paginator.page_range %}
+                <li class="page-item {% if orders.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+                {% endfor %}
+
+                {% if orders.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ orders.next_page_number }}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <i class="fas fa-shopping-bag fa-4x text-muted"></i>
+            </div>
+            <h4>Заказов пока нет</h4>
+            <p class="text-muted">Совершите первую покупку, чтобы увидеть здесь свои заказы</p>
+            <a href="{% url 'book_list' %}" class="btn btn-primary">
+                <i class="fas fa-book me-2"></i>Перейти к книгам
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        color: #6c757d;
+    }
+    .table td {
+        vertical-align: middle;
+    }
+    .badge {
+        font-size: 0.8em;
+        padding: 6px 10px;
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}

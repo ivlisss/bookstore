@@ -1,0 +1,97 @@
+{% extends 'admin/base.html' %}
+
+{% block page_title %}Дашборд{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Статистика -->
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-number">{{ total_books }}</div>
+            <div class="stat-label">Книг</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-number">{{ total_orders }}</div>
+            <div class="stat-label">Заказов</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-number">{{ total_users }}</div>
+            <div class="stat-label">Пользователей</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-number">{{ total_revenue }} ₽</div>
+            <div class="stat-label">Выручка</div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Последние заказы</h5>
+            </div>
+            <div class="card-body">
+                {% for order in latest_orders %}
+                <div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom">
+                    <div>
+                        <strong>#{{ order.id }}</strong>
+                        <small class="text-muted d-block">{{ order.user.username }}</small>
+                    </div>
+                    <div class="text-end">
+                        <span class="status-badge status-{{ order.status }}">
+                            {{ order.get_status_display }}
+                        </span>
+                        <div class="text-muted small">{{ order.total_amount }} ₽</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Книги с низким запасом</h5>
+            </div>
+            <div class="card-body">
+                {% for book in low_stock_books %}
+                <div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom">
+                    <div>{{ book.title }}</div>
+                    <span class="badge bg-warning">{{ book.stock_quantity }} шт.</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Статистика заказов</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for stat in order_stats %}
+                    <div class="col-md-2 text-center">
+                        <div class="stat-number">{{ stat.count }}</div>
+                        <span class="status-badge status-{{ stat.status }}">
+                            {{ stat.status }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

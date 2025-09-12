@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ book.title }} - Книжный магазин{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Изображение и основная информация -->
+    <div class="col-md-5 text-center py-3">
+        {% if book.image %}
+        <img src="{{ book.image.url }}" class="img-fluid rounded" alt="{{ book.title }}" style="height: 600px;">
+        {% else %}
+        <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 400px;">
+            <i class="fas fa-book fa-5x text-muted"></i>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-md-7">
+        <h1 class="display-5 fw-bold">{{ book.title }}</h1>
+        <p class="text-muted">Автор: {{ book.author.first_name }} {{ book.author.last_name }}</p>
+        
+        <div class="mb-4">
+            <span class="display-6 text-primary fw-bold">{{ book.price }} ₽</span>
+            <span class="badge bg-{% if book.stock_quantity > 0 %}success{% else %}danger{% endif %} ms-2">
+                {{ book.stock_quantity }} в наличии
+            </span>
+        </div>
+
+        <div class="mb-4">
+            <h5>Описание</h5>
+            <p class="lead">{{ book.description|default:"Описание отсутствует" }}</p>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <p><strong>ISBN:</strong> {{ book.isbn }}</p>
+                <p><strong>Издательство:</strong> {{ book.publisher.name }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Категории:</strong> 
+                    {% for category in book.categories.all %}
+                    <span class="badge bg-secondary me-1">{{ category.name }}</span>
+                    {% endfor %}
+                </p>
+            </div>
+        </div>
+
+        <div class="d-grid gap-2 d-md-flex">
+            {% if book.stock_quantity > 0 %}
+            <form method="post" action="{% url 'cart' %}" class="me-md-2">
+                {% csrf_token %}
+                <input type="hidden" name="book_id" value="{{ book.id }}">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-shopping-cart"></i> Добавить в корзину
+                </button>
+            </form>
+            {% else %}
+            <button class="btn btn-secondary btn-lg me-md-2" disabled>
+                <i class="fas fa-times"></i> Нет в наличии
+            </button>
+            {% endif %}
+            <a href="{% url 'book_list' %}" class="btn btn-outline-secondary btn-lg">
+                <i class="fas fa-arrow-left"></i> Назад
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Похожие книги -->
+{% if related_books %}
+<div class="row mt-5">
+    <div class="col-12">
+        <h3>Похожие книги</h3>
+        <div class="row row-cols-1 row-cols-md-4 g-4">
+            {% for related_book in related_books %}
+            <div class="col">
+                <div class="card book-card h-100">
+                    {% if related_book.image %}
+                    <img src="{{ related_book.image.url }}" class="card-img-top book-image" alt="{{ related_book.title }}">
+                    {% else %}
+                    <div class="card-img-top book-image bg-light d-flex align-items-center justify-content-center">
+                        <i class="fas fa-book fa-3x text-muted"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="card-body d-flex flex-column">
+                        <h6 class="card-title">{{ related_book.title }}</h6>
+                        <p class="card-text text-muted small">
+                            {{ related_book.author.first_name }} {{ related_book.author.last_name }}
+                        </p>
+                        
+                        <div class="mt-auto">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="h6 text-primary">{{ related_book.price }} ₽</span>
+                                <span class="badge bg-{% if related_book.stock_quantity > 0 %}success{% else %}danger{% endif %}">
+                                    {{ related_book.stock_quantity }}
+                                </span>
+                            </div>
+                            <a href="{% url 'book_detail' related_book.id %}" class="btn btn-outline-primary btn-sm w-100 mt-2">
+                                Подробнее
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

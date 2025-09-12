@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная - Книжный магазин{% endblock %}
+
+{% block content %}
+<!-- Герой секция -->
+<section class="hero-section mb-5">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold">Добро пожаловать в мир книг</h1>
+        <p class="lead mb-4">Откройте для себя лучшие произведения от известных авторов</p>
+        
+        <!-- Поиск -->
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="input-group input-group-lg">
+                    <input type="text" id="searchInput" class="form-control" 
+                           placeholder="Поиск книг по названию или автору...">
+                    <button class="btn btn-light" type="button" onclick="searchBooks()">
+                        <i class="fas fa-search"></i> Найти
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Новые книги -->
+<section class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Новые поступления</h2>
+        <a href="{% url 'book_list' %}" class="btn btn-outline-primary">Все книги</a>
+    </div>
+    
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+        {% for book in new_books %}
+        <div class="col">
+            <div class="card book-card" style="max-height: 45rem; max-width: 15rem;">
+                {% if book.image %}
+                <img src="{{ book.image.url }}" class="card-img-top book-image" alt="{{ book.title }}" style="max-height: 30rem;">
+                {% else %}
+                <div class="card-img-top book-image bg-light d-flex align-items-center justify-content-center">
+                    <i class="fas fa-book fa-3x text-muted"></i>
+                </div>
+                {% endif %}
+                
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ book.title }}</h5>
+                    <p class="card-text text-muted">
+                        <small>Автор: {{ book.author.first_name }} {{ book.author.last_name }}</small>
+                    </p>
+                    <p class="card-text">{{ book.description|truncatewords:15|default:"Описание отсутствует" }}</p>
+                    
+                    <div class="mt-auto">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="h5 text-primary">{{ book.price }} ₽</span>
+                            <span class="badge bg-{% if book.stock_quantity > 0 %}success{% else %}danger{% endif %}">
+                                {{ book.stock_quantity }} в наличии
+                            </span>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'book_detail' book.id %}" class="btn btn-outline-primary">
+                                <i class="fas fa-eye"></i> Подробнее
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Популярные книги -->
+<section class="mb-5">
+    <h2 class="mb-4">Популярные книги</h2>
+    
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+        {% for book in popular_books %}
+        <div class="col">
+            <div class="card book-card" style="max-height: 45rem; max-width: 15rem;">
+                {% if book.image %}
+                <img src="{{ book.image.url }}" class="card-img-top book-image" alt="{{ book.title }}" style="max-height: 30rem;">
+                {% else %}
+                <div class="card-img-top book-image bg-light d-flex align-items-center justify-content-center">
+                    <i class="fas fa-book fa-3x text-muted"></i>
+                </div>
+                {% endif %}
+                
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ book.title }}</h5>
+                    <p class="card-text text-muted">
+                        <small>Автор: {{ book.author.first_name }} {{ book.author.last_name }}</small>
+                    </p>
+                    <p class="card-text">{{ book.description|truncatewords:15|default:"Описание отсутствует" }}</p>
+                    
+                    <div class="mt-auto">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="h5 text-primary">{{ book.price }} ₽</span>
+                            <span class="badge bg-{% if book.stock_quantity > 0 %}success{% else %}danger{% endif %}">
+                                {{ book.stock_quantity }} в наличии
+                            </span>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'book_detail' book.id %}" class="btn btn-outline-primary">
+                                <i class="fas fa-eye"></i> Подробнее
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Категории -->
+<section class="mb-5">
+    <h2 class="mb-4">Категории</h2>
+    
+    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4">
+        {% for category in categories %}
+        <div class="col">
+            <a href="{% url 'category_books' category.slug %}" class="text-decoration-none">
+                <div class="card text-center category-badge">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ category.name }}</h5>
+                        <p class="card-text text-muted">
+                            {{ category.book_count }} книг
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Преимущества -->
+<section class="bg-light py-5">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-4 mb-4">
+                <div class="p-4">
+                    <i class="fas fa-shipping-fast fa-3x text-primary mb-3"></i>
+                    <h4>Быстрая доставка</h4>
+                    <p class="text-muted">Доставка по всей России за 2-5 дней</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="p-4">
+                    <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
+                    <h4>Гарантия качества</h4>
+                    <p class="text-muted">Все книги от проверенных издательств</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="p-4">
+                    <i class="fas fa-headset fa-3x text-primary mb-3"></i>
+                    <h4>Поддержка 24/7</h4>
+                    <p class="text-muted">Круглосуточная поддержка клиентов</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

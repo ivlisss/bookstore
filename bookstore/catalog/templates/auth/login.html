@@ -1,0 +1,42 @@
+{% extends 'auth/base.html' %}
+
+{% block title %}Вход - Книжный магазин{% endblock %}
+{% block auth_title %}Вход в систему{% endblock %}
+
+{% block content %}
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="mb-3">
+        <label for="id_username" class="form-label">Имя пользователя</label>
+        {{ form.username }}
+        {% if form.username.errors %}
+        <div class="text-danger small">{{ form.username.errors.0 }}</div>
+        {% endif %}
+    </div>
+    
+    <div class="mb-3">
+        <label for="id_password" class="form-label">Пароль</label>
+        {{ form.password }}
+        {% if form.password.errors %}
+        <div class="text-danger small">{{ form.password.errors.0 }}</div>
+        {% endif %}
+    </div>
+    
+    <button type="submit" class="btn btn-primary w-100 mb-3">
+        <i class="fas fa-sign-in-alt"></i> Войти
+    </button>
+    
+    <div class="text-center">
+        <a href="{% url 'register' %}" class="auth-link">Нет аккаунта? Зарегистрироваться</a>
+    </div>
+</form>
+{% endblock %}
+
+{% block footer %}
+<div class="text-center">
+    <a href="{% url 'home' %}" class="auth-link">
+        <i class="fas fa-arrow-left"></i> Вернуться на главную
+    </a>
+</div>
+{% endblock %}
