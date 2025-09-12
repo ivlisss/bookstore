@@ -24,6 +24,16 @@
             color: white;
             padding: 80px 0;
         }
+        body {
+    min-height: 100vh; /* Минимальная высота = высоте окна */
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex-grow: 1; /* Растягивает основной контент */
+}
+    </style>
     </style>
 </head>
 <body>
@@ -72,7 +82,8 @@
     </main>
 
     <!-- Футер -->
-    <footer class="bg-dark text-white mt-5 py-4">
+    <div class="container-fluid my-3"></div>
+    <footer class="footer bg-dark text-white mt-5 py-4">
         <div class="container text-center">
             <p>&copy; 2024 Книжный магазин. Все права защищены.</p>
         </div>

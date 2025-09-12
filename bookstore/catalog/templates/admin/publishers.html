@@ -125,32 +125,37 @@
 
 <!-- Модальное окно добавления издательства -->
 <div class="modal fade" id="addPublisherModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Добавить издательство</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form method="post">
+                <form method="post" class="admin-form">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <label class="form-label">Название *</label>
+                        <label class="form-label">Название издательства *</label>
                         {{ form.name }}
                         {% if form.name.errors %}
-                        <div class="text-danger">{{ form.name.errors }}</div>
+                        <div class="text-danger small">{{ form.name.errors.0 }}</div>
                         {% endif %}
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">Адрес</label>
                         {{ form.address }}
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">Веб-сайт</label>
                         {{ form.website }}
                     </div>
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">Добавить</button>
+
+                    <div class="d-flex gap-2 pt-3 border-top">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus-circle me-2"></i>Добавить издательство
+                        </button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
                     </div>
                 </form>
@@ -158,4 +163,92 @@
         </div>
     </div>
 </div>
+<style>
+    .admin-form .modal-content {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+    
+    .admin-form .modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px 12px 0 0;
+        border: none;
+        padding: 20px 25px;
+    }
+    
+    .admin-form .modal-title {
+        font-weight: 600;
+        font-size: 1.25rem;
+    }
+    
+    .admin-form .modal-body {
+        padding: 25px;
+    }
+    
+    .admin-form .btn-close {
+        filter: invert(1);
+        opacity: 0.8;
+    }
+    
+    .admin-form .btn-close:hover {
+        opacity: 1;
+    }
+    
+    .admin-form .border-top {
+        border-color: #e2e8f0 !important;
+        padding-top: 20px;
+    }
+    
+    /* Анимация модального окна */
+    .modal.fade .modal-dialog {
+        transform: translateY(-50px);
+        transition: transform 0.3s ease-out;
+    }
+    
+    .modal.show .modal-dialog {
+        transform: translateY(0);
+    }
+</style>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Обработка отправки форм в модальных окнах
+        const modalForms = document.querySelectorAll('.modal-form');
+        
+        modalForms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const submitBtn = this.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Сохранение...';
+                
+                // Здесь можно добавить AJAX отправку если нужно
+            });
+        });
+        
+        // Сброс формы при закрытии модального окна
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            modal.addEventListener('hidden.bs.modal', function() {
+                const form = this.querySelector('form');
+                if (form) {
+                    form.reset();
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = submitBtn.getAttribute('data-original-text');
+                    }
+                }
+            });
+            
+            // Сохраняем оригинальный текст кнопки
+            modal.addEventListener('show.bs.modal', function() {
+                const submitBtn = this.querySelector('button[type="submit"]');
+                if (submitBtn && !submitBtn.getAttribute('data-original-text')) {
+                    submitBtn.setAttribute('data-original-text', submitBtn.innerHTML);
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}

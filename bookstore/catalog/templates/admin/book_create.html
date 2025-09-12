@@ -10,117 +10,304 @@
                 <h4>{% if form.instance.id %}Редактировать книгу{% else %}Добавить новую книгу{% endif %}</h4>
             </div>
             <div class="card-body">
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Название *</label>
-                                {{ form.title }}
-                                {% if form.title.errors %}
-                                <div class="text-danger">{{ form.title.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Slug *</label>
-                                {{ form.slug }}
-                                {% if form.slug.errors %}
-                                <div class="text-danger">{{ form.slug.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Автор *</label>
-                                {{ form.author }}
-                                {% if form.author.errors %}
-                                <div class="text-danger">{{ form.author.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Издательство *</label>
-                                {{ form.publisher }}
-                                {% if form.publisher.errors %}
-                                <div class="text-danger">{{ form.publisher.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Категории</label>
-                        {{ form.categories }}
-                        {% if form.categories.errors %}
-                        <div class="text-danger">{{ form.categories.errors }}</div>
+                <form method="post" enctype="multipart/form-data" class="admin-form">
+    {% csrf_token %}
+    
+    <!-- Навигация по табам -->
+    <ul class="nav nav-tabs mb-4" id="bookFormTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button" role="tab">
+                <i class="fas fa-info-circle me-2"></i>Основное
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="details-tab" data-bs-toggle="tab" data-bs-target="#details" type="button" role="tab">
+                <i class="fas fa-book-open me-2"></i>Детали
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="image-tab" data-bs-toggle="tab" data-bs-target="#image" type="button" role="tab">
+                <i class="fas fa-image me-2"></i>Изображение
+            </button>
+        </li>
+    </ul>
+
+    <!-- Содержимое табов -->
+    <div class="tab-content" id="bookFormContent">
+        <!-- Таб Основное -->
+        <div class="tab-pane fade show active" id="basic" role="tabpanel">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Название книги *</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                        <div class="text-danger small">{{ form.title.errors.0 }}</div>
                         {% endif %}
                     </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">ISBN *</label>
-                                {{ form.isbn }}
-                                {% if form.isbn.errors %}
-                                <div class="text-danger">{{ form.isbn.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label class="form-label">Цена *</label>
-                                {{ form.price }}
-                                {% if form.price.errors %}
-                                <div class="text-danger">{{ form.price.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label class="form-label">Количество *</label>
-                                {{ form.stock_quantity }}
-                                {% if form.stock_quantity.errors %}
-                                <div class="text-danger">{{ form.stock_quantity.errors }}</div>
-                                {% endif %}
-                            </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">URL slug *</label>
+                        {{ form.slug }}
+                        {% if form.slug.errors %}
+                        <div class="text-danger small">{{ form.slug.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">Автоматически заполнится из названия</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Автор *</label>
+                        {{ form.author }}
+                        {% if form.author.errors %}
+                        <div class="text-danger small">{{ form.author.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">
+                            <a href="{% url 'admin_authors' %}" target="_blank" class="text-decoration-none">
+                                <i class="fas fa-plus-circle"></i> Добавить нового автора
+                            </a>
                         </div>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Описание</label>
-                        {{ form.description }}
-                        {% if form.description.errors %}
-                        <div class="text-danger">{{ form.description.errors }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">Издательство *</label>
+                        {{ form.publisher }}
+                        {% if form.publisher.errors %}
+                        <div class="text-danger small">{{ form.publisher.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">
+                            <a href="{% url 'admin_publishers' %}" target="_blank" class="text-decoration-none">
+                                <i class="fas fa-plus-circle"></i> Добавить новое издательство
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group mt-3">
+                <label class="form-label">Категории *</label>
+                {{ form.categories }}
+                {% if form.categories.errors %}
+                <div class="text-danger small">{{ form.categories.errors.0 }}</div>
+                {% endif %}
+                <div class="form-text">Выберите одну или несколько категорий</div>
+            </div>
+        </div>
+
+        <!-- Таб Детали -->
+        <div class="tab-pane fade" id="details" role="tabpanel">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">ISBN *</label>
+                        {{ form.isbn }}
+                        {% if form.isbn.errors %}
+                        <div class="text-danger small">{{ form.isbn.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">13-значный номер ISBN</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="form-label">Цена *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">₽</span>
+                            {{ form.price }}
+                        </div>
+                        {% if form.price.errors %}
+                        <div class="text-danger small">{{ form.price.errors.0 }}</div>
                         {% endif %}
                     </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Изображение</label>
-                        {{ form.image }}
-                        {% if form.image.errors %}
-                        <div class="text-danger">{{ form.image.errors }}</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="form-label">Количество *</label>
+                        {{ form.stock_quantity }}
+                        {% if form.stock_quantity.errors %}
+                        <div class="text-danger small">{{ form.stock_quantity.errors.0 }}</div>
                         {% endif %}
-                        {% if form.instance.image %}
-                        <div class="mt-2">
-                            <img src="{{ form.instance.image.url }}" alt="Current image" style="max-height: 200px;">
-                        </div>
-                        {% endif %}
+                        <div class="form-text">Доступное количество</div>
                     </div>
-                    
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">Сохранить</button>
-                        <a href="{% url 'admin_books' %}" class="btn btn-secondary">Отмена</a>
-                    </div>
-                </form>
+                </div>
+            </div>
+
+            <div class="form-group mt-3">
+                <label class="form-label">Описание *</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                <div class="text-danger small">{{ form.description.errors.0 }}</div>
+                {% endif %}
+                <div class="form-text">Опишите книгу для покупателей</div>
+            </div>
+        </div>
+
+        <!-- Таб Изображение -->
+        <div class="tab-pane fade" id="image" role="tabpanel">
+            <div class="form-group">
+                <label class="form-label">Изображение обложки</label>
+                {{ form.image }}
+                {% if form.image.errors %}
+                <div class="text-danger small">{{ form.image.errors.0 }}</div>
+                {% endif %}
+                <div class="form-text">Рекомендуемый размер: 500x700px</div>
+            </div>
+
+            <div class="mt-3 p-3 border rounded bg-light">
+                <h6 class="mb-2"><i class="fas fa-info-circle text-primary me-2"></i>Информация об изображении</h6>
+                <p class="small text-muted mb-0">
+                    Загрузка изображения не обязательна. Вы можете добавить его позже при редактировании книги.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Валидация и подсказки -->
+    <div class="alert alert-info mt-4">
+        <div class="d-flex">
+            <i class="fas fa-info-circle fa-2x me-3 text-primary"></i>
+            <div>
+                <h6 class="alert-heading mb-2">Перед созданием книги проверьте:</h6>
+                <ul class="mb-0 ps-3">
+                    <li class="small">Все поля помеченные * обязательны для заполнения</li>
+                    <li class="small">ISBN должен быть уникальным и содержать 13 цифр</li>
+                    <li class="small">Цена и количество должны быть положительными числами</li>
+                    <li class="small">Slug будет автоматически сгенерирован из названия</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Кнопки действий -->
+    <div class="d-flex gap-3 mt-4 pt-4 border-top">
+        <button type="submit" class="btn btn-primary btn-lg">
+            <i class="fas fa-plus-circle me-2"></i>Создать книгу
+        </button>
+        <a href="{% url 'admin_books' %}" class="btn btn-secondary">Отмена</a>
+        <button type="reset" class="btn btn-outline-secondary ms-auto">
+            <i class="fas fa-undo me-2"></i>Очистить форму
+        </button>
+    </div>
+</form>
+
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .admin-form .nav-tabs {
+        border-bottom: 2px solid #667eea;
+    }
+    
+    .admin-form .nav-link {
+        border: none;
+        color: #6b7280;
+        font-weight: 500;
+        padding: 12px 20px;
+        border-radius: 8px 8px 0 0;
+        transition: all 0.3s ease;
+    }
+    
+    .admin-form .nav-link.active {
+        color: #667eea;
+        background-color: white;
+        border-bottom: 3px solid #667eea;
+    }
+    
+    .admin-form .nav-link:hover {
+        color: #667eea;
+        background-color: #f8fafc;
+    }
+    
+    .admin-form .tab-content {
+        padding: 25px;
+        border: 1px solid #e2e8f0;
+        border-top: none;
+        border-radius: 0 0 12px 12px;
+        background: white;
+    }
+    
+    .admin-form .form-group {
+        margin-bottom: 25px;
+    }
+    
+    .admin-form .form-label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+        display: block;
+    }
+    
+    .admin-form .form-control,
+    .admin-form .form-select {
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 12px 15px;
+        width: 100%;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+    
+    .admin-form .form-control:focus,
+    .admin-form .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+    }
+    
+    .admin-form .form-text {
+        color: #6b7280;
+        font-size: 12px;
+        margin-top: 6px;
+    }
+    
+    .admin-form .input-group {
+        border-radius: 8px;
+    }
+    
+    .admin-form .input-group-text {
+        background-color: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-right: none;
+        border-radius: 8px 0 0 8px;
+    }
+    
+    .admin-form .input-group .form-control {
+        border-left: none;
+        border-radius: 0 8px 8px 0;
+    }
+    
+    .admin-form .alert {
+        border-radius: 12px;
+        border: none;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+    
+    .admin-form .btn {
+        border-radius: 10px;
+        padding: 12px 24px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .admin-form .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+    
+    .admin-form .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .admin-form .btn-lg {
+        padding: 14px 28px;
+        font-size: 16px;
+    }
+</style>
 {% endblock %}

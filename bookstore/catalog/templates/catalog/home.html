@@ -12,25 +12,23 @@
         <!-- Поиск -->
         <div class="row justify-content-center">
             <div class="col-md-8">
-                <div class="input-group input-group-lg">
-                    <input type="text" id="searchInput" class="form-control" 
-                           placeholder="Поиск книг по названию или автору...">
-                    <button class="btn btn-light" type="button" onclick="searchBooks()">
+                 <form method="get" action="{% url 'book_list' %}" class="d-flex">
+                    <input class="form-control me-2" type="search" name="book" 
+                        placeholder="Поиск книг..." 
+                        value="{{ request.GET.book }}"
+                        aria-label="Поиск книг">
+                    <button class="btn btn-outline-white" type="submit">
                         <i class="fas fa-search"></i> Найти
                     </button>
-                </div>
+                </form>
             </div>
         </div>
     </div>
 </section>
 
 <!-- Новые книги -->
-<section class="mb-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Новые поступления</h2>
-        <a href="{% url 'book_list' %}" class="btn btn-outline-primary">Все книги</a>
-    </div>
-    
+<section class="container-fluid p-5">
+    <h2>Новые поступления</h2>
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
         {% for book in new_books %}
         <div class="col">
@@ -72,7 +70,7 @@
 </section>
 
 <!-- Популярные книги -->
-<section class="mb-5">
+<section class="container-fluid p-5">
     <h2 class="mb-4">Популярные книги</h2>
     
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
@@ -116,7 +114,7 @@
 </section>
 
 <!-- Категории -->
-<section class="mb-5">
+<section class="container-fluid p-5">
     <h2 class="mb-4">Категории</h2>
     
     <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4">

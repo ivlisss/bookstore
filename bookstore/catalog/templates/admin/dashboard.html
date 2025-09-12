@@ -39,6 +39,27 @@
         font-size: 2em;
         opacity: 0.3;
     }
+    .action-item {
+        border-left: 4px solid transparent;
+        transition: all 0.3s;
+    }
+    
+    .action-addition {
+        border-left-color: #28a745 !important;
+    }
+    
+    .action-change {
+        border-left-color: #ffc107 !important;
+    }
+    
+    .action-deletion {
+        border-left-color: #dc3545 !important;
+    }
+    
+    .action-item:hover {
+        background-color: #f8f9fa;
+        transform: translateX(5px);
+    }
 </style>
 {% endblock %}
 
@@ -75,35 +96,6 @@
     </div>
 </div>
 
-<div class="row mt-4">
-    <!-- График продаж -->
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Продажи за последние 7 дней</h5>
-            </div>
-            <div class="card-body">
-                <div class="chart-container">
-                    <canvas id="salesChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- График статусов заказов -->
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Статусы заказов</h5>
-            </div>
-            <div class="card-body">
-                <div class="chart-container">
-                    <canvas id="orderStatusChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
 <div class="row mt-4">
     <!-- График популярных категорий -->
@@ -113,12 +105,20 @@
                 <h5 class="mb-0">Популярные категории</h5>
             </div>
             <div class="card-body">
-                <div class="chart-container">
-                    <canvas id="categoryChart"></canvas>
+                {% if popular_categories %}
+                {% for c in popular_categories %}
+                <p><a a href="{% url 'admin_categories' %}" class="badge bg-secondary" style="height: 3rem; width: 12rem; font-size: 20px;">{{c.name}}</a></p>
+                {% endfor %}
+                {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-box-open fa-2x mb-2"></i>
+                    <p>Нет категорий для отображения</p>
                 </div>
+                {% endif %}
             </div>
         </div>
     </div>
+
 
     <!-- Боковая панель с действиями и уведомлениями -->
     <div class="col-md-6">
@@ -210,84 +210,6 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // График продаж
-    const salesCtx = document.getElementById('salesChart').getContext('2d');
-    const salesChart = new Chart(salesCtx, {
-        type: 'line',
-        data: {
-            labels: {{ sales_dates|safe }},
-            datasets: [{
-                label: 'Продажи (₽)',
-                data: {{ sales_data }},
-                borderColor: '#667eea',
-                backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.1)'
-                    }
-                },
-                x: {
-                    grid: {
-                        display: false
-                    }
-                }
-            }
-        }
-    });
-
-    // График популярных категорий
-    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
-    const categoryChart = new Chart(categoryCtx, {
-        type: 'bar',
-        data: {
-            labels: {{ category_labels|safe }},
-            datasets: [{
-                label: 'Количество книг',
-                data: {{ category_data }},
-                backgroundColor: {{ category_colors|safe }},
-                borderWidth: 0,
-                borderRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.1)'
-                    }
-                },
-                x: {
-                    grid: {
-                        display: false
-                    }
-                }
-            }
-        }
-    });
-
     // Анимация при скролле
     document.addEventListener('DOMContentLoaded', function() {
         const observer = new IntersectionObserver((entries) => {

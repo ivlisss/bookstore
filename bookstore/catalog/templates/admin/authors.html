@@ -43,47 +43,64 @@
                     </tr>
 
                     <!-- Модальное окно редактирования автора -->
-                    <div class="modal fade" id="editAuthorModal{{ author.id }}" tabindex="-1">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Редактировать автора</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <form method="post" action="{% url 'admin_authors' %}">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="author_id" value="{{ author.id }}">
-                                        <div class="mb-3">
-                                            <label class="form-label">Имя *</label>
-                                            <input type="text" name="first_name" class="form-control" value="{{ author.first_name }}" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Фамилия *</label>
-                                            <input type="text" name="last_name" class="form-control" value="{{ author.last_name }}" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Дата рождения</label>
-                                            <input type="date" name="birth_date" class="form-control" value="{{ author.birth_date|date:'Y-m-d' }}">
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Биография</label>
-                                            <textarea name="bio" class="form-control" rows="4">{{ author.bio }}</textarea>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Веб-сайт</label>
-                                            <input type="url" name="website" class="form-control" value="{{ author.website }}">
-                                        </div>
-                                        <div class="d-flex gap-2">
-                                            <button type="submit" class="btn btn-primary">Сохранить</button>
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                                        </div>
-                                    </form>
-                                </div>
+<div class="modal fade" id="editAuthorModal{{ author.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Редактировать автора</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'admin_authors' %}" class="admin-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="author_id" value="{{ author.id }}">
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Имя *</label>
+                                <input type="text" name="first_name" class="form-control" value="{{ author.first_name }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Фамилия *</label>
+                                <input type="text" name="last_name" class="form-control" value="{{ author.last_name }}" required>
                             </div>
                         </div>
                     </div>
 
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Дата рождения</label>
+                                <input type="date" name="birth_date" class="form-control" value="{{ author.birth_date|date:'Y-m-d' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Веб-сайт</label>
+                                <input type="url" name="website" class="form-control" value="{{ author.website }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Биография</label>
+                        <textarea name="bio" class="form-control" rows="4">{{ author.bio }}</textarea>
+                    </div>
+
+                    <div class="d-flex gap-2 pt-3 border-top">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Сохранить изменения
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
                     <!-- Модальное окно удаления автора -->
                     <div class="modal fade" id="deleteAuthorModal{{ author.id }}" tabindex="-1">
                         <div class="modal-dialog">
@@ -125,43 +142,60 @@
 
 <!-- Модальное окно добавления автора -->
 <div class="modal fade" id="addAuthorModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Добавить автора</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form method="post">
+                <form method="post" class="admin-form">
                     {% csrf_token %}
-                    <div class="mb-3">
-                        <label class="form-label">Имя *</label>
-                        {{ form.first_name }}
-                        {% if form.first_name.errors %}
-                        <div class="text-danger">{{ form.first_name.errors }}</div>
-                        {% endif %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Имя *</label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                <div class="text-danger small">{{ form.first_name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Фамилия *</label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                <div class="text-danger small">{{ form.last_name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Фамилия *</label>
-                        {{ form.last_name }}
-                        {% if form.last_name.errors %}
-                        <div class="text-danger">{{ form.last_name.errors }}</div>
-                        {% endif %}
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Дата рождения</label>
+                                {{ form.birth_date }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Веб-сайт</label>
+                                {{ form.website }}
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Дата рождения</label>
-                        {{ form.birth_date }}
-                    </div>
+
                     <div class="mb-3">
                         <label class="form-label">Биография</label>
                         {{ form.bio }}
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Веб-сайт</label>
-                        {{ form.website }}
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">Добавить</button>
+
+                    <div class="d-flex gap-2 pt-3 border-top">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus-circle me-2"></i>Добавить автора
+                        </button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
                     </div>
                 </form>

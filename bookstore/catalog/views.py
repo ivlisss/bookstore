@@ -1,10 +1,7 @@
 import json
 from django.http import HttpResponseForbidden
-from django.shortcuts import render
-
-# Create your views here.
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q, Count
@@ -367,9 +364,6 @@ def admin_dashboard(request):
         book_count=Count('books')
     ).order_by('-book_count')[:5]
     
-    for category in popular_categories:
-        category_data.append(category.book_count)
-        category_labels.append(category.name)
     
     context = {
         'total_books': Book.objects.count(),
@@ -394,9 +388,7 @@ def admin_dashboard(request):
         # Данные для графиков
         'sales_data': sales_data,
         'sales_dates': dates,
-        'category_data': category_data,
-        'category_labels': category_labels,
-        'category_colors': category_colors,
+        'popular_categories': popular_categories,
 
         'recent_actions': recent_actions,
     }
