@@ -1,219 +1,446 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Мой профиль - Книжный магазин{% endblock %}
 
 {% block content %}
-<div class="row">
-    <!-- Боковая панель профиля -->
-    <div class="col-md-4">
-        <div class="card shadow-sm">
-            <div class="card-body text-center">
-                <div class="mb-4">
-                    <div class="profile-avatar rounded-circle d-inline-flex align-items-center justify-content-center">
-                        <i class="fas fa-user fa-2x text-white"></i>
+<div class="container py-5">
+    <!-- Заголовок -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="d-flex align-items-center">
+                <h1 class="display-5 fw-bold text-gradient">Мой профиль</h1>
+                <span class="badge bg-primary ms-3 fs-6">Активный</span>
+            </div>
+            <p class="text-muted">Управляйте вашей учетной записью и отслеживайте заказы</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Боковая панель профиля -->
+        <div class="col-lg-4">
+            <!-- Карточка профиля -->
+            <div class="card profile-card shadow-lg border-0">
+                <div class="card-body text-center p-4">
+                    <div class="mb-4">
+                        <div class="profile-avatar mx-auto">
+                            <i class="fas fa-user fa-2x text-white"></i>
+                            <div class="online-status"></div>
+                        </div>
+                    </div>
+                    
+                    <h4 class="mb-2 fw-bold">{{ user.get_full_name|default:user.username }}</h4>
+                    <p class="text-muted mb-3">@{{ user.username }}</p>
+                    
+                    <div class="rating mb-3">
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star-half-alt text-warning"></i>
+                        <span class="ms-2 small text-muted">4.5/5</span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'order_list' %}" class="btn btn-primary-gradient">
+                            <i class="fas fa-shopping-bag me-2"></i>Мои заказы
+                        </a>
+                        <a href="{% url 'cart' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-shopping-cart me-2"></i>Корзина
+                            {% if cart_items_count > 0 %}
+                            <span class="badge bg-danger ms-2">{{ cart_items_count }}</span>
+                            {% endif %}
+                        </a>
                     </div>
                 </div>
-                
-                <h4 class="mb-1">{{ user.get_full_name|default:user.username }}</h4>
-                <p class="text-muted mb-3">@{{ user.username }}</p>
-                
-                <div class="d-grid gap-2">
-                    <a href="{% url 'order_list' %}" class="btn btn-outline-primary">
-                        <i class="fas fa-shopping-bag me-2"></i>Мои заказы
-                    </a>
-                    <a href="{% url 'cart' %}" class="btn btn-outline-secondary">
-                        <i class="fas fa-shopping-cart me-2"></i>Корзина
-                    </a>
+            </div>
+
+            <!-- Статистика -->
+            <div class="card shadow-sm border-0 mt-4">
+                <div class="card-header bg-transparent border-0 pb-0">
+                    <h6 class="mb-0"><i class="fas fa-chart-pie me-2 text-primary"></i>Статистика</h6>
+                </div>
+                <div class="card-body">
+                    <div class="stats-item">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="text-muted">
+                                <i class="fas fa-shopping-bag me-2"></i>Заказов
+                            </span>
+                            <strong class="text-primary fs-5">{{ orders.count }}</strong>
+                        </div>
+                        <div class="progress mb-3" style="height: 6px;">
+                            <div class="progress-bar bg-primary" style="width: {% widthratio orders.count 10 100 %}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="stats-item">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="text-muted">
+                                <i class="fas fa-cart-shopping me-2"></i>В корзине
+                            </span>
+                            {% if cart_items_count > 0 %}
+                            <strong class="text-success fs-5">{{ cart_items_count }} шт.</strong>
+                            {% else %}
+                            <strong class="text-success fs-5">0 шт.</strong>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="stats-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted">
+                                <i class="fas fa-calendar me-2"></i>С нами с
+                            </span>
+                            <strong class="text-info">{{ user.date_joined|date:"d.m.Y" }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Быстрые действия -->
+        </div>
+
+        <!-- Основная информация -->
+        <div class="col-lg-8">
+            <!-- Личная информация -->
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="mb-0"><i class="fas fa-user-circle me-2 text-primary"></i>Личная информация</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'profile' %}" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_first_name" class="form-label">Имя</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    <input type="text" class="form-control" id="id_first_name" name="first_name" 
+                                           value="{{ user.first_name|default:'' }}" placeholder="Ваше имя">
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_last_name" class="form-label">Фамилия</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    <input type="text" class="form-control" id="id_last_name" name="last_name" 
+                                           value="{{ user.last_name|default:'' }}" placeholder="Ваша фамилия">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_email" class="form-label">Email *</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                <input type="email" class="form-control" id="id_email" name="email" 
+                                       value="{{ user.email|default:'' }}" required placeholder="your@email.com">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_phone" class="form-label">Телефон</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                <input type="tel" class="form-control" id="id_phone" name="phone" 
+                                       value="{{ user.phone|default:'' }}" placeholder="+7 (999) 999-99-99">
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <h6 class="mb-3"><i class="fas fa-map-marker-alt me-2 text-danger"></i>Адрес доставки</h6>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_country" class="form-label">Страна</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-globe"></i></span>
+                                    <select class="form-select" id="id_country" name="country">
+                                        <option value="Россия" {% if user.country == "Россия" %}selected{% endif %}>Россия</option>
+                                        <option value="Казахстан" {% if user.country == "Казахстан" %}selected{% endif %}>Казахстан</option>
+                                        <option value="Беларусь" {% if user.country == "Беларусь" %}selected{% endif %}>Беларусь</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_city" class="form-label">Город</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-city"></i></span>
+                                    <input type="text" class="form-control" id="id_city" name="city" 
+                                           value="{{ user.city|default:'' }}" placeholder="Москва">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="id_postal_code" class="form-label">Почтовый индекс</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-mail-bulk"></i></span>
+                                    <input type="text" class="form-control" id="id_postal_code" name="postal_code" 
+                                           value="{{ user.postal_code|default:'' }}" placeholder="123456">
+                                </div>
+                            </div>
+                            <div class="col-md-8 mb-3">
+                                <label for="id_address" class="form-label">Адрес</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-home"></i></span>
+                                    <input type="text" class="form-control" id="id_address" name="address" 
+                                           value="{{ user.address|default:'' }}" placeholder="ул. Примерная, д. 1, кв. 1">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary-gradient">
+                                <i class="fas fa-save me-2"></i>Сохранить изменения
+                            </button>
+                            <button type="reset" class="btn btn-outline-secondary">
+                                <i class="fas fa-undo me-2"></i>Сбросить
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Последние заказы -->
+            {% if orders %}
+            <div class="card shadow-lg border-0 mt-4">
+                <div class="card-header bg-transparent border-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-history me-2 text-success"></i>Последние заказы</h5>
+                        <a href="{% url 'order_list' %}" class="btn btn-sm btn-outline-primary">
+                            Все заказы <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>№ заказа</th>
+                                    <th>Дата</th>
+                                    <th>Сумма</th>
+                                    <th>Статус</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in orders|slice:":3" %}
+                                <tr>
+                                    <td><strong>#{{ order.id }}</strong></td>
+                                    <td>{{ order.created_at|date:"d.m.Y H:i" }}</td>
+                                    <td class="fw-bold">{{ order.total_amount }} ₽</td>
+                                    <td>
+                                        <span class="badge bg-{% if order.status == 'delivered' %}success{% elif order.status == 'cancelled' %}danger{% else %}warning{% endif %} rounded-pill">
+                                            {{ order.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Рекомендации -->
+            <div class="card shadow-lg border-0 mt-4">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="mb-0"><i class="fas fa-bookmark me-2 text-danger"></i>Рекомендуем почитать</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary rounded p-2 me-3">
+                                    <i class="fas fa-book text-white"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">"Мастер и Маргарита"</h6>
+                                    <small class="text-muted">Михаил Булгаков</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-success rounded p-2 me-3">
+                                    <i class="fas fa-book text-white"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">"1984"</h6>
+                                    <small class="text-muted">Джордж Оруэлл</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <!-- Статистика -->
-        <div class="card shadow-sm mt-4">
-            <div class="card-header bg-transparent">
-                <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Статистика</h6>
-            </div>
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="text-muted">Заказов:</span>
-                    <strong class="text-primary">{{ orders.count }}</strong>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="text-muted">В корзине:</span>
-                    <strong class="text-primary">{{ cart_items_count }} шт.</strong>
-                </div>
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="text-muted">С нами с:</span>
-                    <strong>{{ user.date_joined|date:"d.m.Y" }}</strong>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Основная информация -->
-    <div class="col-md-8 px-5">
-        <!-- Личная информация -->
-        <div class="card shadow-sm">
-            <div class="card-header bg-transparent">
-                <h5 class="mb-0"><i class="fas fa-user-circle me-2"></i>Личная информация</h5>
-            </div>
-            <div class="card-body">
-                <form method="post" action="{% url 'profile' %}">
-            {% csrf_token %}
-            
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="id_first_name" class="form-label">Имя</label>
-                    <input type="text" class="form-control" id="id_first_name" name="first_name" 
-                           value="{{ user.first_name|default:'' }}">
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="id_last_name" class="form-label">Фамилия</label>
-                    <input type="text" class="form-control" id="id_last_name" name="last_name" 
-                           value="{{ user.last_name|default:'' }}">
-                </div>
-            </div>
-            
-            <div class="mb-3">
-                <label for="id_email" class="form-label">Email *</label>
-                <input type="email" class="form-control" id="id_email" name="email" 
-                       value="{{ user.email|default:'' }}" required>
-            </div>
-            
-            <div class="mb-3">
-                <label for="id_phone" class="form-label">Телефон</label>
-                <input type="tel" class="form-control" id="id_phone" name="phone" 
-                       value="{{ user.phone|default:'' }}">
-            </div>
-            
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="id_country" class="form-label">Страна</label>
-                    <input type="text" class="form-control" id="id_country" name="country" 
-                           value="{{ user.country|default:'Россия' }}">
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="id_city" class="form-label">Город</label>
-                    <input type="text" class="form-control" id="id_city" name="city" 
-                           value="{{ user.city|default:'' }}">
-                </div>
-            </div>
-            
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label for="id_postal_code" class="form-label">Почтовый индекс</label>
-                    <input type="text" class="form-control" id="id_postal_code" name="postal_code" 
-                           value="{{ user.postal_code|default:'' }}">
-                </div>
-                <div class="col-md-8 mb-3">
-                    <label for="id_address" class="form-label">Адрес</label>
-                    <input type="text" class="form-control" id="id_address" name="address" 
-                           value="{{ user.address|default:'' }}">
-                </div>
-            </div>
-            
-            <button type="submit" class="btn btn-primary">Сохранить изменения</button>
-        </form>
-            </div>
-        </div>
-
-
-        <!-- Последние заказы -->
-        {% if orders %}
-        <div class="card shadow-sm mt-4">
-            <div class="card-header bg-transparent">
-                <h5 class="mb-0"><i class="fas fa-history me-2"></i>Последние заказы</h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>№ заказа</th>
-                                <th>Дата</th>
-                                <th>Сумма</th>
-                                <th>Статус</th>
-                                <th>Действия</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for order in orders|slice:":3" %}
-                            <tr>
-                                <td><strong>#{{ order.id }}</strong></td>
-                                <td>{{ order.created_at|date:"d.m.Y H:i" }}</td>
-                                <td>{{ order.total_amount }} ₽</td>
-                                <td>
-                                    <span class="badge bg-{% if order.status == 'delivered' %}success{% elif order.status == 'cancelled' %}danger{% else %}warning{% endif %}">
-                                        {{ order.get_status_display }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% if orders.count > 3 %}
-                <div class="text-center mt-3">
-                    <a href="{% url 'order_list' %}" class="btn btn-outline-primary btn-sm">
-                        Все заказы <i class="fas fa-arrow-right ms-1"></i>
-                    </a>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-        {% endif %}
     </div>
 </div>
-<div class="container-fluid my-5"></div>
+
+
 {% endblock %}
 
 {% block extra_css %}
 <style>
+    .text-gradient {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .profile-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 20px;
+    }
+    
     .profile-avatar {
         width: 100px;
         height: 100px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        border: 3px solid rgba(255, 255, 255, 0.3);
         transition: transform 0.3s ease;
     }
+    
     .profile-avatar:hover {
-        transform: scale(1.05);
+        transform: scale(1.1);
     }
-    .card {
+    
+    .online-status {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        width: 15px;
+        height: 15px;
+        background: #28a745;
+        border: 2px solid white;
+        border-radius: 50%;
+    }
+    
+    .btn-primary-gradient {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border: none;
-        border-radius: 15px;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        color: white;
+        transition: transform 0.3s ease;
     }
-    .card:hover {
+    
+    .btn-primary-gradient:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+        color: white;
     }
-    .form-control {
-        border-radius: 10px;
+    
+    .card {
+        border-radius: 20px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 12px;
         border: 2px solid #e9ecef;
         transition: all 0.3s ease;
+        padding: 12px 15px;
     }
-    .form-control:focus {
+    
+    .form-control:focus, .form-select:focus {
         border-color: #667eea;
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        box-shadow: 0 0 0 0.3rem rgba(102, 126, 234, 0.15);
     }
-    .btn {
-        border-radius: 10px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-    .table th {
+    
+    .input-group-text {
+        border-radius: 12px 0 0 12px;
         background: #f8f9fa;
+        border: 2px solid #e9ecef;
+        border-right: none;
+    }
+    
+    .stats-item {
+        padding: 10px 0;
+        border-bottom: 1px solid #f1f3f4;
+    }
+    
+    .stats-item:last-child {
+        border-bottom: none;
+    }
+    
+    .progress {
+        border-radius: 10px;
+        height: 8px !important;
+    }
+    
+    .table th {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
         border: none;
         font-weight: 600;
-        color: #6c757d;
+        padding: 15px;
     }
+    
     .table td {
+        padding: 15px;
         vertical-align: middle;
     }
+    
+    .badge.rounded-pill {
+        padding: 8px 12px;
+        font-size: 0.8em;
+    }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Валидация формы
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+    
+    // Анимация появления элементов
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.card');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'all 0.6s ease';
+            
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    });
+</script>
 {% endblock %}

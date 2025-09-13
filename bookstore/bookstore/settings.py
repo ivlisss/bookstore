@@ -121,14 +121,6 @@ AUTH_USER_MODEL = 'catalog.User'
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.yandex.ru'
-EMAIL_USE_SSL = True  # Или EMAIL_USE_SSL = True, если требуется SSL
-EMAIL_PORT = 587 # Порт для TLS (или 465 для SSL)
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "vera.44as@yandex.ru"  # Ваша Яндекс.Почта
-EMAIL_HOST_PASSWORD = "aevmqmlkkvgggdjg"  # Пароль или пароль приложения
-DEFAULT_FROM_EMAIL = "vera.44as@yandex.ru"  # Email отправителя по умолчанию
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
