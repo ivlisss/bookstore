@@ -4,6 +4,26 @@
 {% block auth_title %}Вход в систему{% endblock %}
 
 {% block content %}
+ {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Пожалуйста, введите правильные имя пользователя и пароль.
+                    </div>
+                    {% endif %}
+                    
+                    {% if next %}
+                        {% if user.is_authenticated %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            У вашей учетной записи нет доступа к этой странице.
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Пожалуйста, войдите, чтобы увидеть эту страницу.
+                        </div>
+                        {% endif %}
+                    {% endif %}
 <form method="post">
     {% csrf_token %}
     
@@ -26,11 +46,11 @@
     <button type="submit" class="btn btn-primary w-100 mb-3">
         <i class="fas fa-sign-in-alt"></i> Войти
     </button>
-    <!-- <div class="text-center mt-3">
+    <div class="text-center mt-3">
     <a href="{% url 'password_reset' %}" class="text-decoration-none">
         Забыли пароль?
     </a>
-</div> -->
+</div>
     <div class="text-center">
         <a href="{% url 'register' %}" class="auth-link">Нет аккаунта? Зарегистрироваться</a>
     </div>

@@ -1,9 +1,13 @@
-from django.urls import path
+from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from . import views
-from django.contrib.auth import views as auth_views
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register(r'cart', views.CartViewSet, basename='cart')
 
 urlpatterns = [
+    path('api/', include(router.urls)),
     # Публичные маршруты
     path('', views.home, name='home'),
     path('books/', views.book_list, name='book_list'),
@@ -39,4 +43,59 @@ urlpatterns = [
     path('admin/categories/<int:category_id>/delete/', views.admin_category_delete, name='admin_category_delete'),
     path('admin/authors/', views.admin_authors, name='admin_authors'),
     path('admin/publishers/', views.admin_publishers, name='admin_publishers'),
+
+    path('password-reset/', 
+         auth_views.PasswordResetView.as_view(
+             template_name='registration/password_reset.html',
+             email_template_name='registration/password_reset_email.html',
+             subject_template_name='registration/password_reset_subject.txt',
+             success_url='/password-reset/done/'
+         ), 
+         name='password_reset'),
+    
+    path('password-reset/done/', 
+         auth_views.PasswordResetDoneView.as_view(
+             template_name='registration/password_reset_done.html'
+         ), 
+         name='password_reset_done'),
+    
+    path('password-reset-confirm/<uidb64>/<token>/', 
+         auth_views.PasswordResetConfirmView.as_view(
+             template_name='registration/password_reset_confirm.html',
+             success_url='/password-reset-complete/'
+         ), 
+         name='password_reset_confirm'),
+    
+    path('password-reset-complete/', 
+         auth_views.PasswordResetCompleteView.as_view(
+             template_name='registration/password_reset_complete.html'
+         ), 
+         name='password_reset_complete'),
+
+    path('api/register/', views.RegisterView.as_view(), name='api_register'),
+    path('api/login/', views.LoginView.as_view(), name='api_login'),
+    path('api/logout/', views.LogoutView.as_view(), name='api_logout'),
+    
+    # Books
+    path('api/books/', views.BookListView.as_view(), name='book-list'),
+    path('api/books/<int:pk>/', views.BookDetailView.as_view(), name='book-detail'),
+    
+    # Categories
+    path('api/categories/', views.CategoryListView.as_view(), name='category-list'),
+    path('api/categories/<int:pk>/', views.CategoryDetailView.as_view(), name='category-detail'),
+    
+    # Authors
+    path('api/authors/', views.AuthorListView.as_view(), name='author-list'),
+    path('api/authors/<int:pk>/', views.AuthorDetailView.as_view(), name='author-detail'),
+    
+    # Publishers
+    path('api/publishers/', views.PublisherListView.as_view(), name='publisher-list'),
+    path('api/publishers/<int:pk>/', views.PublisherDetailView.as_view(), name='publisher-detail'),
+    
+    # Orders
+    path('api/orders/', views.OrderListView.as_view(), name='order-list'),
+    path('api/orders/<int:pk>/', views.OrderDetailView.as_view(), name='order-detail'),
+    
+    # Search
+    path('api/search/', views.SearchAPIView.as_view(), name='search'),
 ]

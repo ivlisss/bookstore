@@ -1,15 +1,24 @@
 import json
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Prefetch, Sum
 from django.core.paginator import Paginator
 from .models import Book, Category, Author, Order, OrderItem, Cart, CartItem
 from .forms import LoginForm, RegisterForm, UserProfileForm, OrderForm
 from django.contrib.auth.views import LoginView
 from django.contrib.admin.models import LogEntry
+from . serializers import *
+from rest_framework import generics, viewsets, status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.decorators import action
+from rest_framework import generics, permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
 
 def home(request):
     # Новые книги
@@ -626,3 +635,300 @@ def admin_publishers(request):
     }
     
     return render(request, 'admin/publishers.html', context)
+# Authentication Views
+class LoginView(APIView):
+    permission_classes = [permissions.AllowAny]
+    
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            login(request, user)
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({
+                'token': token.key,
+                'user': UserSerializer(user).data
+            })
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class LogoutView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request):
+        logout(request)
+        Token.objects.filter(user=request.user).delete()
+        return Response({'detail': 'Successfully logged out'})
+
+class RegisterView(generics.CreateAPIView):
+    permission_classes = [permissions.AllowAny]
+    serializer_class = UserRegistrationSerializer
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        
+        Cart.objects.get_or_create(user=user)
+        token = Token.objects.create(user=user)
+        
+        return Response({
+            'token': token.key,
+            'user': UserSerializer(user).data
+        }, status=status.HTTP_201_CREATED)
+    
+
+class BookListView(generics.ListCreateAPIView):
+    queryset = Book.objects.select_related('author', 'publisher').prefetch_related('categories')
+    serializer_class = BookSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        search_query = self.request.GET.get('q')
+        if search_query:
+            queryset = queryset.filter(
+                Q(title__icontains=search_query) |
+                Q(author__first_name__icontains=search_query) |
+                Q(author__last_name__icontains=search_query) |
+                Q(description__icontains=search_query)
+            )
+        
+        category = self.request.GET.get('category')
+        if category:
+            queryset = queryset.filter(categories__id=category)
+        
+        author = self.request.GET.get('author')
+        if author:
+            queryset = queryset.filter(author__id=author)
+        
+        min_price = self.request.GET.get('min_price')
+        max_price = self.request.GET.get('max_price')
+        if min_price:
+            queryset = queryset.filter(price__gte=min_price)
+        if max_price:
+            queryset = queryset.filter(price__lte=max_price)
+        
+        sort_by = self.request.GET.get('sort', 'title')
+        if sort_by in ['title', 'price', 'created_at', '-price', '-created_at']:
+            queryset = queryset.order_by(sort_by)
+        
+        return queryset
+
+class BookDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Book.objects.select_related('author', 'publisher').prefetch_related('categories')
+    serializer_class = BookSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+# Category Views
+class CategoryListView(generics.ListCreateAPIView):
+    queryset = Category.objects.annotate(books_count=Count('books'))
+    serializer_class = CategorySerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+class CategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Category.objects.annotate(books_count=Count('books'))
+    serializer_class = CategorySerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+# Author Views
+class AuthorListView(generics.ListCreateAPIView):
+    queryset = Author.objects.annotate(books_count=Count('books'))
+    serializer_class = AuthorSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+class AuthorDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Author.objects.annotate(books_count=Count('books'))
+    serializer_class = AuthorSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+# Publisher Views
+class PublisherListView(generics.ListCreateAPIView):
+    queryset = Publisher.objects.annotate(books_count=Count('books'))
+    serializer_class = PublisherSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+class PublisherDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Publisher.objects.annotate(books_count=Count('books'))
+    serializer_class = PublisherSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+# Cart Views - используем ViewSet для кастомных действий
+class CartViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def list(self, request):
+        """Получить корзину текущего пользователя"""
+        cart, created = Cart.objects.get_or_create(user=request.user)
+        serializer = CartSerializer(cart)
+        return Response(serializer.data)
+    
+    def retrieve(self, request, pk=None):
+        """Получить корзину по ID (для текущего пользователя)"""
+        cart = get_object_or_404(Cart, id=pk, user=request.user)
+        serializer = CartSerializer(cart)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['post'])
+    def add_item(self, request):
+        """Добавить товар в корзину"""
+        cart, created = Cart.objects.get_or_create(user=request.user)
+        book_id = request.data.get('book_id')
+        quantity = int(request.data.get('quantity', 1))
+        
+        try:
+            book = Book.objects.get(id=book_id)
+            if book.stock_quantity < quantity:
+                return Response(
+                    {'error': 'Недостаточно товара на складе'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            cart_item, created = CartItem.objects.get_or_create(
+                cart=cart, 
+                book=book,
+                defaults={'quantity': quantity}
+            )
+            
+            if not created:
+                cart_item.quantity += quantity
+                cart_item.save()
+            
+            serializer = CartSerializer(cart)
+            return Response(serializer.data)
+            
+        except Book.DoesNotExist:
+            return Response(
+                {'error': 'Книга не найдена'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+    
+    @action(detail=False, methods=['post'])
+    def update_item(self, request):
+        """Обновить количество товара в корзине"""
+        cart = get_object_or_404(Cart, user=request.user)
+        book_id = request.data.get('book_id')
+        quantity = int(request.data.get('quantity', 1))
+        
+        try:
+            cart_item = CartItem.objects.get(cart=cart, book_id=book_id)
+            if quantity <= 0:
+                cart_item.delete()
+            else:
+                cart_item.quantity = quantity
+                cart_item.save()
+            
+            serializer = CartSerializer(cart)
+            return Response(serializer.data)
+            
+        except CartItem.DoesNotExist:
+            return Response(
+                {'error': 'Товар не найден в корзине'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+    
+    @action(detail=False, methods=['post'])
+    def remove_item(self, request):
+        """Удалить товар из корзины"""
+        cart = get_object_or_404(Cart, user=request.user)
+        book_id = request.data.get('book_id')
+        
+        try:
+            cart_item = CartItem.objects.get(cart=cart, book_id=book_id)
+            cart_item.delete()
+            
+            serializer = CartSerializer(cart)
+            return Response(serializer.data)
+            
+        except CartItem.DoesNotExist:
+            return Response(
+                {'error': 'Товар не найден в корзине'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+    
+    @action(detail=False, methods=['post'])
+    def clear(self, request):
+        """Очистить корзину"""
+        cart = get_object_or_404(Cart, user=request.user)
+        cart.items.all().delete()
+        
+        serializer = CartSerializer(cart)
+        return Response(serializer.data)
+
+# Order Views
+class OrderListView(generics.ListCreateAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user).prefetch_related(
+            Prefetch('items', queryset=OrderItem.objects.select_related('book'))
+        ).order_by('-created_at')
+    
+    def perform_create(self, serializer):
+        cart = get_object_or_404(Cart, user=self.request.user)
+        
+        if cart.items.count() == 0:
+            raise serializers.ValidationError("Корзина пуста")
+        
+        # Проверяем наличие товаров
+        for item in cart.items.all():
+            if item.book.stock_quantity < item.quantity:
+                raise serializers.ValidationError(
+                    f"Недостаточно товара: {item.book.title}"
+                )
+        
+        # Создаем заказ
+        order = serializer.save(
+            user=self.request.user,
+            total_amount=cart.total_price
+        )
+        
+        # Создаем позиции заказа и обновляем склад
+        for cart_item in cart.items.all():
+            OrderItem.objects.create(
+                order=order,
+                book=cart_item.book,
+                quantity=cart_item.quantity,
+                price=cart_item.book.price
+            )
+            # Обновляем склад
+            cart_item.book.stock_quantity -= cart_item.quantity
+            cart_item.book.save()
+        
+        # Очищаем корзину
+        cart.items.all().delete()
+
+class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user).prefetch_related(
+            Prefetch('items', queryset=OrderItem.objects.select_related('book'))
+        )
+
+# Search
+class SearchAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
+    
+    def get(self, request):
+        query = request.GET.get('q', '')
+        
+        if not query:
+            return Response({'error': 'Query parameter "q" is required'}, 
+                          status=status.HTTP_400_BAD_REQUEST)
+        
+        books = Book.objects.filter(
+            Q(title__icontains=query) |
+            Q(author__first_name__icontains=query) |
+            Q(author__last_name__icontains=query) |
+            Q(description__icontains=query)
+        )[:20]
+        
+        serializer = BookSerializer(books, many=True)
+        return Response({
+            'query': query,
+            'results': serializer.data,
+            'count': books.count()
+        })
