@@ -1,0 +1,467 @@
+[
+{
+  "model": "catalog.user",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$iTV7654BzFHaJCD27IJKzR$SFB8xXlX25J0Mmk63r8VEI+b3NQI8Qzx8+zC+my2J2Y=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "admin",
+    "first_name": "Администратор",
+    "last_name": "системы",
+    "email": "admin@bookstore.ru",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-09-15T16:58:18.451Z",
+    "role": "admin",
+    "phone": "+7 (495) 123-45-67",
+    "address": "ул. Книжная, д. 1, офис 101",
+    "city": "Москва",
+    "postal_code": "123456",
+    "country": "Россия"
+  }
+},
+{
+  "model": "catalog.user",
+  "pk": 2,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$AvdVmXd39lrWjyGrOIGBU6$XFKpP7gbGudwM0uxNCVU2lbIuQevX5yDccaerPp9Muc=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "ivanov",
+    "first_name": "Иван",
+    "last_name": "Иванов",
+    "email": "ivanov@example.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2023-02-15T14:30:00Z",
+    "role": "user",
+    "phone": "+7 (916) 123-45-67",
+    "address": "ул. Читательская, д. 15, кв. 34",
+    "city": "Москва",
+    "postal_code": "123789",
+    "country": "Россия",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+  {
+    "model": "catalog.category",
+    "pk": 1,
+    "fields": {
+      "name": "Художественная литература",
+      "slug": "fiction",
+      "description": "Романы, повести, рассказы и другие произведения художественной литературы"
+    }
+  },
+  {
+    "model": "catalog.category",
+    "pk": 2,
+    "fields": {
+      "name": "Фантастика",
+      "slug": "science-fiction",
+      "description": "Научная фантастика, фэнтези и другие жанры"
+    }
+  },
+  {
+    "model": "catalog.category",
+    "pk": 3,
+    "fields": {
+      "name": "Детективы",
+      "slug": "detectives",
+      "description": "Детективные романы и триллеры"
+    }
+  },
+  {
+    "model": "catalog.category",
+    "pk": 4,
+    "fields": {
+      "name": "Научная литература",
+      "slug": "science",
+      "description": "Научно-популярные книги и учебные пособия"
+    }
+  },
+  {
+    "model": "catalog.category",
+    "pk": 5,
+    "fields": {
+      "name": "Бизнес-литература",
+      "slug": "business",
+      "description": "Книги по бизнесу, менеджменту и маркетингу"
+    }
+  },
+  {
+    "model": "catalog.author",
+    "pk": 1,
+    "fields": {
+      "first_name": "Михаил",
+      "last_name": "Булгаков",
+      "bio": "Русский писатель, драматург, театральный режиссёр и актёр. Автор романов «Мастер и Маргарита», «Собачье сердце», «Белая гвардия».",
+      "birth_date": "1891-05-15",
+      "website": ""
+    }
+  },
+  {
+    "model": "catalog.author",
+    "pk": 2,
+    "fields": {
+      "first_name": "Джордж",
+      "last_name": "Оруэлл",
+      "bio": "Английский писатель и публицист. Наиболее известен как автор культового антиутопического романа «1984» и повести «Скотный двор».",
+      "birth_date": "1903-06-25",
+      "website": ""
+    }
+  },
+  {
+    "model": "catalog.author",
+    "pk": 3,
+    "fields": {
+      "first_name": "Фёдор",
+      "last_name": "Достоевский",
+      "bio": "Русский писатель, мыслитель, философ и публицист. Член-корреспондент Петербургской академии наук с 1877 года.",
+      "birth_date": "1821-11-11",
+      "website": ""
+    }
+  },
+  {
+    "model": "catalog.author",
+    "pk": 4,
+    "fields": {
+      "first_name": "Агата",
+      "last_name": "Кристи",
+      "bio": "Английская писательница. Относится к числу самых известных в мире авторов детективной прозы.",
+      "birth_date": "1890-09-15",
+      "website": ""
+    }
+  },
+  {
+    "model": "catalog.author",
+    "pk": 5,
+    "fields": {
+      "first_name": "Стивен",
+      "last_name": "Кинг",
+      "bio": "Американский писатель, работающий в разнообразных жанрах, включая ужасы, триллер, фантастика, фэнтези, мистика.",
+      "birth_date": "1947-09-21",
+      "website": ""
+    }
+  },
+  {
+    "model": "catalog.publisher",
+    "pk": 1,
+    "fields": {
+      "name": "Эксмо",
+      "address": "Москва, ул. Зорге, д. 1",
+      "website": "https://eksmo.ru"
+    }
+  },
+  {
+    "model": "catalog.publisher",
+    "pk": 2,
+    "fields": {
+      "name": "АСТ",
+      "address": "Москва, пр-т Мира, д. 106",
+      "website": "https://ast.ru"
+    }
+  },
+  {
+    "model": "catalog.publisher",
+    "pk": 3,
+    "fields": {
+      "name": "Питер",
+      "address": "Санкт-Петербург, ул. Благодатная, д. 67",
+      "website": "https://piter.com"
+    }
+  },
+  {
+    "model": "catalog.publisher",
+    "pk": 4,
+    "fields": {
+      "name": "Манн, Иванов и Фербер",
+      "address": "Москва, ул. Шаболовка, д. 34",
+      "website": "https://mann-ivanov-ferber.ru"
+    }
+  },
+  {
+    "model": "catalog.publisher",
+    "pk": 5,
+    "fields": {
+      "name": "Росмэн",
+      "address": "Москва, ул. Шаболовка, д. 31",
+      "website": "https://rosman.ru"
+    }
+  },
+  {
+    "model": "catalog.book",
+    "pk": 1,
+    "fields": {
+      "title": "Мастер и Маргарита",
+      "slug": "master-i-margarita",
+      "author": 1,
+      "publisher": 1,
+      "categories": [1],
+      "isbn": "9785170903165",
+      "description": "Один из самых загадочных и удивительных романов XX века. «Мастер и Маргарита» – лирико-философская поэма в прозе о любви и нравственном долге, о бессмертии и вечном движении жизни, о борьбе добра и зла, истины и лжи.",
+      "price": "599.00",
+      "stock_quantity": 10,
+      "created_at": "2023-01-10T09:15:00Z",
+      "updated_at": "2023-01-10T09:15:00Z",
+      "image": "covers/master_i_margarita.jpg"
+    }
+  },
+  {
+    "model": "catalog.book",
+    "pk": 2,
+    "fields": {
+      "title": "1984",
+      "slug": "1984",
+      "author": 2,
+      "publisher": 2,
+      "categories": [1, 2],
+      "isbn": "9785170870481",
+      "description": "Своеобразный антипод второй великой антиутопии XX века – «О дивный новый мир» Олдоса Хаксли. Что, в сущности, страшнее: доведенное до абсурда «общество потребления» – или доведенное до абсолюта «общество идеи»?",
+      "price": "549.00",
+      "stock_quantity": 15,
+      "created_at": "2023-01-12T11:20:00Z",
+      "updated_at": "2023-01-12T11:20:00Z",
+      "image": "covers/1984.jpg"
+    }
+  },
+  {
+    "model": "catalog.book",
+    "pk": 3,
+    "fields": {
+      "title": "Преступление и наказание",
+      "slug": "prestuplenie-i-nakazanie",
+      "author": 3,
+      "publisher": 1,
+      "categories": [1],
+      "isbn": "9785170902342",
+      "description": "«Преступление и наказание» (1866) — роман об одном преступлении. Но это не просто «уголовный роман», в основе которого лежит история убийства. Двойное убийство, совершенное бедным студентом Раскольниковым.",
+      "price": "489.00",
+      "stock_quantity": 8,
+      "created_at": "2023-01-15T14:45:00Z",
+      "updated_at": "2023-01-15T14:45:00Z",
+      "image": "covers/prestuplenie_i_nakazanie.jpg"
+    }
+  },
+  {
+    "model": "catalog.book",
+    "pk": 4,
+    "fields": {
+      "title": "Убийство в Восточном экспрессе",
+      "slug": "ubijstvo-v-vostochnom-ekspresse",
+      "author": 4,
+      "publisher": 2,
+      "categories": [3],
+      "isbn": "9785170927659",
+      "description": "Один из самых знаменитых романов Агаты Кристи. Знаменитый сыщик Эркюль Пуаро расследует убийство в поезде «Восточный экспресс», застрявшем в снежных заносах.",
+      "price": "429.00",
+      "stock_quantity": 12,
+      "created_at": "2023-01-20T16:30:00Z",
+      "updated_at": "2023-01-20T16:30:00Z",
+      "image": "covers/orient_express.jpg"
+    }
+  },
+  {
+    "model": "catalog.book",
+    "pk": 5,
+    "fields": {
+      "title": "Оно",
+      "slug": "ono",
+      "author": 5,
+      "publisher": 1,
+      "categories": [1, 2],
+      "isbn": "9785170934565",
+      "description": "Самый известный роман Стивена Кинга. История семи друзей, которые в детстве столкнулись с древним злом, а спустя годы вынуждены вернуться в родной город, чтобы снова сразиться с ним.",
+      "price": "699.00",
+      "stock_quantity": 6,
+      "created_at": "2023-01-25T13:10:00Z",
+      "updated_at": "2023-01-25T13:10:00Z",
+      "image": "covers/it.jpg"
+    }
+  },
+  {
+    "model": "catalog.order",
+    "pk": 1,
+    "fields": {
+      "user": 2,
+      "created_at": "2023-03-01T10:30:00Z",
+      "updated_at": "2023-03-01T10:30:00Z",
+      "total_amount": "1148.00",
+      "status": "delivered",
+      "shipping_address": "Москва, ул. Читательская, д. 15, кв. 34",
+      "delivery_method": "delivery",
+      "delivery_cost": "300.00",
+      "total_price": "1448.00"
+    }
+  },
+  {
+    "model": "catalog.order",
+    "pk": 2,
+    "fields": {
+      "user": 2,
+      "created_at": "2023-03-05T14:20:00Z",
+      "updated_at": "2023-03-05T14:20:00Z",
+      "total_amount": "489.00",
+      "status": "processing",
+      "shipping_address": "Москва, ул. Читательская, д. 15, кв. 34",
+      "delivery_method": "pickup",
+      "delivery_cost": "0.00",
+      "total_price": "489.00"
+    }
+  },
+  {
+    "model": "catalog.order",
+    "pk": 3,
+    "fields": {
+      "user": 2,
+      "created_at": "2023-03-10T09:45:00Z",
+      "updated_at": "2023-03-10T09:45:00Z",
+      "total_amount": "429.00",
+      "status": "shipped",
+      "shipping_address": "Москва, ул. Книжная, д. 5, кв. 12",
+      "delivery_method": "delivery",
+      "delivery_cost": "250.00",
+      "total_price": "679.00"
+    }
+  },
+  {
+    "model": "catalog.order",
+    "pk": 4,
+    "fields": {
+      "user": 2,
+      "created_at": "2023-03-15T16:10:00Z",
+      "updated_at": "2023-03-15T16:10:00Z",
+      "total_amount": "1398.00",
+      "status": "pending",
+      "shipping_address": "Москва, пр-т Мира, д. 45, кв. 78",
+      "delivery_method": "delivery",
+      "delivery_cost": "300.00",
+      "total_price": "1698.00"
+    }
+  },
+  {
+    "model": "catalog.order",
+    "pk": 5,
+    "fields": {
+      "user": 2,
+      "created_at": "2023-03-20T11:30:00Z",
+      "updated_at": "2023-03-20T11:30:00Z",
+      "total_amount": "699.00",
+      "status": "cancelled",
+      "shipping_address": "Москва, ул. Литературная, д. 23, кв. 56",
+      "delivery_method": "pickup",
+      "delivery_cost": "0.00",
+      "total_price": "699.00"
+    }
+  },
+  {
+    "model": "catalog.orderitem",
+    "pk": 1,
+    "fields": {
+      "order": 1,
+      "book": 1,
+      "quantity": 1,
+      "price": "599.00"
+    }
+  },
+  {
+    "model": "catalog.orderitem",
+    "pk": 2,
+    "fields": {
+      "order": 1,
+      "book": 2,
+      "quantity": 1,
+      "price": "549.00"
+    }
+  },
+  {
+    "model": "catalog.orderitem",
+    "pk": 3,
+    "fields": {
+      "order": 2,
+      "book": 3,
+      "quantity": 1,
+      "price": "489.00"
+    }
+  },
+  {
+    "model": "catalog.orderitem",
+    "pk": 4,
+    "fields": {
+      "order": 3,
+      "book": 4,
+      "quantity": 1,
+      "price": "429.00"
+    }
+  },
+  {
+    "model": "catalog.orderitem",
+    "pk": 5,
+    "fields": {
+      "order": 4,
+      "book": 5,
+      "quantity": 2,
+      "price": "699.00"
+    }
+  },
+  {
+    "model": "catalog.cart",
+    "pk": 1,
+    "fields": {
+      "user": 2,
+      "created_at": "2023-03-10T15:45:00Z",
+      "updated_at": "2023-03-10T15:45:00Z"
+    }
+  },
+  {
+    "model": "catalog.cartitem",
+    "pk": 1,
+    "fields": {
+      "cart": 1,
+      "book": 3,
+      "quantity": 2,
+      "added_at": "2023-03-10T15:45:00Z"
+    }
+  },
+  {
+    "model": "catalog.cartitem",
+    "pk": 2,
+    "fields": {
+      "cart": 1,
+      "book": 1,
+      "quantity": 1,
+      "added_at": "2023-03-11T10:20:00Z"
+    }
+  },
+  {
+    "model": "catalog.cartitem",
+    "pk": 3,
+    "fields": {
+      "cart": 1,
+      "book": 4,
+      "quantity": 1,
+      "added_at": "2023-03-12T14:35:00Z"
+    }
+  },
+  {
+    "model": "catalog.cartitem",
+    "pk": 4,
+    "fields": {
+      "cart": 1,
+      "book": 2,
+      "quantity": 1,
+      "added_at": "2023-03-13T16:50:00Z"
+    }
+  },
+  {
+    "model": "catalog.cartitem",
+    "pk": 5,
+    "fields": {
+      "cart": 1,
+      "book": 5,
+      "quantity": 1,
+      "added_at": "2023-03-14T09:15:00Z"
+    }
+  }
+]
