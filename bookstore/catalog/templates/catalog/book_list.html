@@ -12,7 +12,7 @@
                 <h5>Фильтры</h5>
             </div>
             <div class="card-body">
-                    
+                 <form method="get" action="{% url 'book_list' %}">  
                     <div class="mb-3">
                         <label class="form-label">Автор</label>
                         <select name="author" class="form-select">

@@ -176,5 +176,20 @@
             }
         }
     });
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Автоматическое скрытие уведомлений через 5 секунд
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+        setTimeout(() => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }, 1000);
+    });
+    
+    // Отладочная информация в консоль
+    console.log('Recent actions count:', {{ recent_actions|length }});
+    console.log('Log entries count:', {{ log_entries_count }});
+});
 </script>
 {% endblock %}

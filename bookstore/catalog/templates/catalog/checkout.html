@@ -14,7 +14,6 @@
                 <form method="post" id="order-form">
                     {% csrf_token %}
                     
-                    <!-- Скрытое поле для стоимости доставки -->
                     <input type="hidden" name="delivery_cost" id="delivery-cost" value="0">
                     
                     <div class="mb-4">
@@ -22,8 +21,12 @@
                         <div class="mb-3">
                             <label for="id_shipping_address" class="form-label fw-semibold">Адрес доставки *</label>
                             {{ form.shipping_address }}
-                            {% if form.shipping_address.errors %}
-                            <div class="text-danger small mt-1">{{ form.shipping_address.errors.0 }}</div>
+                            {% if form.non_field_errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
                             {% endif %}
                             <div class="form-text">Укажите полный адрес доставки: улица, дом, квартира</div>
                         </div>
@@ -78,54 +81,52 @@
     </div>
 
     <!-- Итог заказа -->
-    <div class="col-lg-4">
-        <div class="card shadow-sm">
-            <div class="card-header bg-transparent">
-                <h5 class="mb-0">Ваш заказ</h5>
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <h6>Товары ({{ cart.total_items }}):</h6>
-                    {% for item in cart.items.all %}
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <div>
-                            <small>{{ item.book.title }}</small>
-                            <br>
-                            <small class="text-muted">{{ item.quantity }} × {{ item.book.price }} ₽</small>
-                        </div>
-                        <strong>{{ item.total_price }} ₽</strong>
+<div class="col-lg-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-transparent">
+            <h5 class="mb-0">Ваш заказ</h5>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <h6>Товары ({{ cart.total_items }}):</h6>
+                {% for item in cart.items.all %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <small>{{ item.book.title }}</small>
+                        <br>
+                        <small class="text-muted">{{ item.quantity }} × {{ item.book.price }} ₽</small>
                     </div>
-                    {% endfor %}
+                    <strong>{{ item.total_price }} ₽</strong>
                 </div>
+                {% endfor %}
+            </div>
 
-                <hr>
+            <hr>
 
-                <div class="d-flex justify-content-between mb-2">
-                    <span>Стоимость товаров:</span>
-                    <span id="products-total">{{ cart.total_price }} ₽</span>
+            <div class="d-flex justify-content-between mb-2">
+                <span>Стоимость товаров:</span>
+                <span id="products-total">{{ cart.total_price }} ₽</span>
+            </div>
+            
+            <div class=" justify-content-between mb-2 delivery-cost" style="display:none;">
+                    <span>Доставка</span>
+                    <span class="delivery-price">300 руб.</span>
                 </div>
-                
-                <!-- Строка с доставкой - изначально скрыта -->
-                <div class="d-flex justify-content-between mb-2 delivery-cost" style="display: none;">
-                    <span>Доставка:</span>
-                    <span class="delivery-price text-success">300 ₽</span>
-                </div>
-                
-                <hr>
-                <div class="d-flex justify-content-between mb-3">
-                    <strong>Итого:</strong>
-                    <strong class="total-price text-primary">{{ cart.total_price }} ₽</strong>
-                </div>
+       
+            <hr>
+            <div class="d-flex justify-content-between mb-3">
+                <strong>Итого:</strong>
+                <strong class="total-price text-primary">{{ cart.total_price|floatformat:2 }} ₽</strong>
+            </div>
 
-                <div class="alert alert-info" id="free-delivery-alert" style="display: none;">
-                    <small>
-                        <i class="fas fa-info-circle me-1"></i>
-                        Бесплатная доставка при заказе от 2000 ₽
-                    </small>
-                </div>
+            <div class="alert alert-info" id="free-delivery-alert" style="display: none;">
+                <small>
+                    <i class="fas fa-info-circle me-1"></i>
+                    Бесплатная доставка при заказе от 2000 ₽
+                </small>
             </div>
         </div>
-
+    </div>
         <!-- Контактная информация -->
         <div class="card shadow-sm mt-4">
             <div class="card-header bg-transparent">
@@ -148,15 +149,31 @@ document.addEventListener('DOMContentLoaded', function() {
     const deliveryPriceElement = document.querySelector('.delivery-price');
     const deliveryPriceText = document.querySelector('.delivery-price-text');
     const totalPriceElement = document.querySelector('.total-price');
-    const basePrice = {{ cart.total_price }};
+    const freeDeliveryAlert = document.getElementById('free-delivery-alert');
+    const basePrice = {{ cart.total_price }}; // Убедитесь, что это число с двумя знаками
+    const productsTotalElement = document.getElementById('products-total');
     
-    // Проверяем, действует ли бесплатная доставка
-    const freeDeliveryThreshold = 2000;
+    // Стоимость доставки
+    const DELIVERY_COST = 300.00;
+    const freeDeliveryThreshold = 2000.00;
     const hasFreeDelivery = basePrice >= freeDeliveryThreshold;
     
-    // Обновляем текст о стоимости доставки, если действует бесплатная доставка
-    if (hasFreeDelivery) {
-        deliveryPriceText.textContent = 'бесплатно';
+    // Функция для форматирования денежных значений
+    function formatPrice(price) {
+        return parseFloat(price).toFixed(2) + ' ₽';
+    }
+    
+    // Форматируем базовую цену при загрузке
+    if (productsTotalElement) {
+        productsTotalElement.textContent = formatPrice(basePrice);
+    }
+    if (totalPriceElement) {
+        totalPriceElement.textContent = formatPrice(basePrice);
+    }
+    
+    // Обновляем текст о стоимости доставки
+    if (deliveryPriceText) {
+        deliveryPriceText.textContent = hasFreeDelivery ? 'бесплатно' : formatPrice(DELIVERY_COST);
     }
 
     function updateDeliveryCost() {
@@ -167,22 +184,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Бесплатная доставка
                 deliveryCostRow.style.display = 'flex';
                 deliveryPriceElement.textContent = 'Бесплатно';
-                totalPriceElement.textContent = basePrice + ' руб.';
+                totalPriceElement.textContent = formatPrice(basePrice);
+                if (freeDeliveryAlert) freeDeliveryAlert.style.display = 'block';
             } else {
-                // Платная доставка
+                // Платная доставка - 500.00 рублей
                 deliveryCostRow.style.display = 'flex';
-                deliveryPriceElement.textContent = '300 руб.';
-                totalPriceElement.textContent = (basePrice + 300) + ' руб.';
+                deliveryPriceElement.textContent = formatPrice(DELIVERY_COST);
+                totalPriceElement.textContent = formatPrice(basePrice + DELIVERY_COST);
+                if (freeDeliveryAlert) freeDeliveryAlert.style.display = 'none';
             }
         } else {
             // Самовывоз
             deliveryCostRow.style.display = 'none';
-            totalPriceElement.textContent = basePrice + ' руб.';
+            totalPriceElement.textContent = formatPrice(basePrice);
+            if (freeDeliveryAlert) freeDeliveryAlert.style.display = 'none';
         }
     }
 
     // Инициализация при загрузке
-    setTimeout(updateDeliveryCost, 50);
+    updateDeliveryCost();
 
     // Обработка изменений способа доставки
     deliveryMethods.forEach(method => {
