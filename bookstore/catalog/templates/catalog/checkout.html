@@ -11,13 +11,16 @@
                 <h4 class="mb-0"><i class="fas fa-truck me-2"></i>Оформление заказа</h4>
             </div>
             <div class="card-body">
-                <form method="post">
+                <form method="post" id="order-form">
                     {% csrf_token %}
+                    
+                    <!-- Скрытое поле для стоимости доставки -->
+                    <input type="hidden" name="delivery_cost" id="delivery-cost" value="0">
                     
                     <div class="mb-4">
                         <h5 class="mb-3">Адрес доставки</h5>
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Адрес доставки *</label>
+                            <label for="id_shipping_address" class="form-label fw-semibold">Адрес доставки *</label>
                             {{ form.shipping_address }}
                             {% if form.shipping_address.errors %}
                             <div class="text-danger small mt-1">{{ form.shipping_address.errors.0 }}</div>
@@ -28,33 +31,35 @@
 
                     <div class="mb-4">
                         <h5 class="mb-3">Способ доставки</h5>
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="radio" name="delivery" id="delivery1" checked>
-                            <label class="form-check-label" for="delivery1">
-                                <strong>Курьерская доставка</strong> - 300 ₽
-                                <br><small class="text-muted">Доставка в течение 2-3 дней</small>
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="delivery" id="delivery2">
-                            <label class="form-check-label" for="delivery2">
-                                <strong>Самовывоз</strong> - Бесплатно
-                                <br><small class="text-muted">г. Москва, ул. Примерная, д. 123</small>
-                            </label>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="delivery_method" 
+                                       id="delivery_pickup" value="pickup" checked>
+                                <label class="form-check-label" for="delivery_pickup">
+                                    Самовывоз (бесплатно)
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="delivery_method" 
+                                       id="delivery_delivery" value="delivery">
+                                <label class="form-check-label" for="delivery_delivery">
+                                    Курьерская доставка (<span class="delivery-price-text">300 руб.</span>)
+                                </label>
+                            </div>
                         </div>
                     </div>
 
                     <div class="mb-4">
                         <h5 class="mb-3">Способ оплаты</h5>
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="radio" name="payment" id="payment1" checked>
+                            <input class="form-check-input" type="radio" name="payment" id="payment1" value="card" checked>
                             <label class="form-check-label" for="payment1">
                                 <strong>Банковская карта</strong>
                                 <br><small class="text-muted">Оплата онлайн</small>
                             </label>
                         </div>
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="radio" name="payment" id="payment2">
+                            <input class="form-check-input" type="radio" name="payment" id="payment2" value="cash">
                             <label class="form-check-label" for="payment2">
                                 <strong>Наличные при получении</strong>
                                 <br><small class="text-muted">Оплата курьеру или в пункте выдачи</small>
@@ -97,19 +102,22 @@
 
                 <div class="d-flex justify-content-between mb-2">
                     <span>Стоимость товаров:</span>
-                    <span>{{ cart.total_price }} ₽</span>
+                    <span id="products-total">{{ cart.total_price }} ₽</span>
                 </div>
-                <div class="d-flex justify-content-between mb-2">
+                
+                <!-- Строка с доставкой - изначально скрыта -->
+                <div class="d-flex justify-content-between mb-2 delivery-cost" style="display: none;">
                     <span>Доставка:</span>
-                    <span class="text-success">300 ₽</span>
+                    <span class="delivery-price text-success">300 ₽</span>
                 </div>
+                
                 <hr>
                 <div class="d-flex justify-content-between mb-3">
                     <strong>Итого:</strong>
-                    <strong class="text-primary">{{ cart.total_price|add:300 }} ₽</strong>
+                    <strong class="total-price text-primary">{{ cart.total_price }} ₽</strong>
                 </div>
 
-                <div class="alert alert-info">
+                <div class="alert alert-info" id="free-delivery-alert" style="display: none;">
                     <small>
                         <i class="fas fa-info-circle me-1"></i>
                         Бесплатная доставка при заказе от 2000 ₽
@@ -133,6 +141,55 @@
         </div>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deliveryMethods = document.querySelectorAll('input[name="delivery_method"]');
+    const deliveryCostRow = document.querySelector('.delivery-cost');
+    const deliveryPriceElement = document.querySelector('.delivery-price');
+    const deliveryPriceText = document.querySelector('.delivery-price-text');
+    const totalPriceElement = document.querySelector('.total-price');
+    const basePrice = {{ cart.total_price }};
+    
+    // Проверяем, действует ли бесплатная доставка
+    const freeDeliveryThreshold = 2000;
+    const hasFreeDelivery = basePrice >= freeDeliveryThreshold;
+    
+    // Обновляем текст о стоимости доставки, если действует бесплатная доставка
+    if (hasFreeDelivery) {
+        deliveryPriceText.textContent = 'бесплатно';
+    }
+
+    function updateDeliveryCost() {
+        const selectedMethod = document.querySelector('input[name="delivery_method"]:checked');
+        
+        if (selectedMethod && selectedMethod.value === 'delivery') {
+            if (hasFreeDelivery) {
+                // Бесплатная доставка
+                deliveryCostRow.style.display = 'flex';
+                deliveryPriceElement.textContent = 'Бесплатно';
+                totalPriceElement.textContent = basePrice + ' руб.';
+            } else {
+                // Платная доставка
+                deliveryCostRow.style.display = 'flex';
+                deliveryPriceElement.textContent = '300 руб.';
+                totalPriceElement.textContent = (basePrice + 300) + ' руб.';
+            }
+        } else {
+            // Самовывоз
+            deliveryCostRow.style.display = 'none';
+            totalPriceElement.textContent = basePrice + ' руб.';
+        }
+    }
+
+    // Инициализация при загрузке
+    setTimeout(updateDeliveryCost, 50);
+
+    // Обработка изменений способа доставки
+    deliveryMethods.forEach(method => {
+        method.addEventListener('change', updateDeliveryCost);
+    });
+});
+</script>
 {% endblock %}
 
 {% block extra_css %}

@@ -148,13 +148,36 @@ class Order(models.Model):
         ('delivered', 'Доставлен'),
         ('cancelled', 'Отменен'),
     ]
+    DELIVERY_CHOICES = [
+        ('pickup', 'Самовывоз'),
+        ('delivery', 'Курьерская доставка'),
+    ]
     user = models.ForeignKey(User, related_name='orders', on_delete=models.CASCADE, verbose_name="Покупатель")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата заказа")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)], verbose_name="Общая сумма")
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)], verbose_name="Общая сумма", null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name="Статус заказа")
     shipping_address = models.TextField(verbose_name="Адрес доставки")
-    # Можно добавить другие поля, такие как способ оплаты, трек-номер и т.д.
+    delivery_method = models.CharField(
+        max_length=10,
+        choices=DELIVERY_CHOICES,
+        default='pickup',
+        verbose_name='Способ доставки'
+    )
+    delivery_cost = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        verbose_name='Стоимость доставки'
+    )
+    total_price = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        default=0,
+        verbose_name='Общая стоимость',
+        null=True,
+        blank=True
+    )
 
     class Meta:
         verbose_name = "Заказ"
@@ -204,11 +227,12 @@ class Cart(models.Model):
     def total_items(self):
         return self.items.aggregate(total=models.Sum('quantity'))['total'] or 0
 
-    @property
     def total_price(self):
-        return self.items.aggregate(
-            total=models.Sum(models.F('quantity') * models.F('book__price'))
-        )['total'] or 0
+        """Возвращает общую стоимость товаров в корзине"""
+        total = 0
+        for item in self.items.all():
+            total += item.total_price()
+        return total
 
     def add_item(self, book, quantity=1):
         """Добавить товар в корзину"""
@@ -271,6 +295,5 @@ class CartItem(models.Model):
     def __str__(self):
         return f'{self.quantity} x {self.book.title}'
 
-    @property
     def total_price(self):
-        return self.quantity * self.book.price 
+        return self.quantity * self.book.price

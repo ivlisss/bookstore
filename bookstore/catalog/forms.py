@@ -43,14 +43,29 @@ class PublisherForm(forms.ModelForm):
             'address': forms.Textarea(attrs={'rows': 3}),
         }
 
-class OrderForm(forms.ModelForm):
-    class Meta:
-        model = Order
-        fields = ['shipping_address']
-        widgets = {
-            'shipping_address': forms.Textarea(attrs={'rows': 3}),
-        }
-
+# forms.py
+class OrderForm(forms.Form):
+    shipping_address = forms.CharField(
+        label='Адрес доставки',
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 3,
+            'placeholder': 'Введите полный адрес доставки',
+            'id': 'id_shipping_address'
+        }),
+        max_length=500,
+        required=False  # Делаем необязательным, так как для самовывоза не нужен
+    )
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        delivery_method = self.data.get('delivery_method')
+        shipping_address = cleaned_data.get('shipping_address')
+        
+        if delivery_method == 'delivery' and not shipping_address:
+            raise forms.ValidationError('Для курьерской доставки необходимо указать адрес')
+        
+        return cleaned_data
 
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(

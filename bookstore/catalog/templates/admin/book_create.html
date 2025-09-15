@@ -46,16 +46,23 @@
                         {% endif %}
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="form-label">URL slug *</label>
-                        {{ form.slug }}
-                        {% if form.slug.errors %}
-                        <div class="text-danger small">{{ form.slug.errors.0 }}</div>
-                        {% endif %}
-                        <div class="form-text">Автоматически заполнится из названия</div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">URL slug *</label>
+                            <div class="input-group">
+                                {{ form.slug }}
+                                <button type="button" class="btn btn-outline-secondary" id="generate-slug" title="Сгенерировать из названия">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </div>
+                            {% if form.slug.errors %}
+                            <div class="text-danger small">{{ form.slug.errors.0 }}</div>
+                            {% endif %}
+                            <div class="form-text">
+                                Автоматически генерируется из названия. Можно редактировать вручную.
+                            </div>
+                        </div>
                     </div>
-                </div>
             </div>
 
             <div class="row mt-3">
@@ -310,4 +317,99 @@
         font-size: 16px;
     }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Элементы формы
+    const titleInput = document.getElementById('id_title');
+    const slugInput = document.getElementById('id_slug');
+    const generateSlugBtn = document.getElementById('generate-slug');
+    
+    // Функция для создания slug
+function createSlug(text) {
+    const ruToEnMap = {
+        'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo', 'ж': 'zh',
+        'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o',
+        'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u', 'ф': 'f', 'х': 'kh', 'ц': 'ts',
+        'ч': 'ch', 'ш': 'sh', 'щ': 'shch', 'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu',
+        'я': 'ya'
+    };
+
+    let slug = text
+        .toLowerCase() // 1. Приводим к нижнему регистру
+        .trim() // 2. Убираем пробелы в начале и конце
+        // 3. Транслитерируем русские буквы
+        .split('') // Разбиваем на массив символов
+        .map(char => ruToEnMap[char] || char) // Заменяем русские буквы на латиницу, остальные оставляем
+        .join(''); // Собираем обратно в строку
+
+    // Теперь работаем с латиницей
+    slug = slug
+        .replace(/[^a-z0-9\s-]/g, '') // Удаляем спецсимволы, оставляем буквы (англ), цифры, пробелы и дефисы
+        .replace(/[\s]+/g, '-') // Заменяем пробелы на дефисы
+        .replace(/[-]+/g, '-') // Убираем повторяющиеся дефисы
+        .replace(/^-+|-+$/g, ''); // Убираем дефисы в начале и конце
+
+    return slug;
+}
+    
+    // Автоматическое обновление slug при вводе названия
+    if (titleInput && slugInput) {
+        let isSlugManual = false;
+        
+        // Отслеживаем ручное изменение slug
+        slugInput.addEventListener('input', function() {
+            isSlugManual = true;
+        });
+        
+        // Обновляем slug при изменении названия (если slug не был изменен вручную)
+        titleInput.addEventListener('input', function() {
+            if (!isSlugManual) {
+                slugInput.value = createSlug(titleInput.value);
+            }
+        });
+        
+        // Кнопка для перегенерации slug
+        if (generateSlugBtn) {
+            generateSlugBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                slugInput.value = createSlug(titleInput.value);
+                isSlugManual = false;
+            });
+        }
+        
+        // Также обновляем slug при загрузке страницы, если название уже есть
+        if (titleInput.value && !slugInput.value) {
+            slugInput.value = createSlug(titleInput.value);
+        }
+    }
+    
+    // Предпросмотр изображения перед загрузкой
+    const imageInput = document.getElementById('id_image');
+    if (imageInput) {
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Удаляем старый превью если есть
+                    const oldPreview = document.getElementById('image-preview');
+                    if (oldPreview) oldPreview.remove();
+                    
+                    const preview = document.createElement('img');
+                    preview.id = 'image-preview';
+                    preview.src = e.target.result;
+                    preview.className = 'img-fluid rounded shadow-sm mt-3';
+                    preview.style.maxHeight = '200px';
+                    preview.style.width = 'auto';
+                    preview.style.border = '2px dashed #e2e8f0';
+                    
+                    imageInput.parentNode.appendChild(preview);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

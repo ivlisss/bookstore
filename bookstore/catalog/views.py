@@ -204,8 +204,7 @@ def checkout(request):
     try:
         cart = Cart.objects.get(user=request.user)
     except Cart.DoesNotExist:
-        messages.error(request, 'Ваша корзина пуста')
-        return redirect('cart')
+        cart = Cart.objects.create(user=request.user)
     
     if cart.items.count() == 0:
         messages.error(request, 'Ваша корзина пуста')
@@ -214,14 +213,32 @@ def checkout(request):
     if request.method == 'POST':
         form = OrderForm(request.POST)
         if form.is_valid():
+            delivery_method = request.POST.get('delivery_method', 'pickup')
+            delivery_cost = 300 if delivery_method == 'delivery' else 0
+            
+            # Добавляем адрес доставки только для курьерской доставки
+            if delivery_method == 'delivery':
+                shipping_address = form.cleaned_data['shipping_address']
+                if not shipping_address:
+                    messages.error(request, 'Для курьерской доставки необходимо указать адрес')
+                    return render(request, 'catalog/checkout.html', {
+                        'form': form,
+                        'cart': cart
+                    })
+            else:
+                shipping_address = 'Самовывоз'
+            
             # Создаем заказ
             order = Order.objects.create(
                 user=request.user,
-                shipping_address=form.cleaned_data['shipping_address'],
-                total_amount=cart.total_price
+                delivery_method=delivery_method,
+                delivery_cost=delivery_cost,
+                total_price=cart.total_price() + delivery_cost,
+                shipping_address=shipping_address,
+                total_amount=cart.total_price() + delivery_cost
             )
             
-            # Добавляем товары из корзины в заказ
+            # Создаем позиции заказа
             for cart_item in cart.items.all():
                 OrderItem.objects.create(
                     order=order,
@@ -229,22 +246,26 @@ def checkout(request):
                     quantity=cart_item.quantity,
                     price=cart_item.book.price
                 )
+                
+                # Обновляем количество на складе
+                cart_item.book.stock_quantity -= cart_item.quantity
+                cart_item.book.save()
             
             # Очищаем корзину
-            cart.clear()
+            cart.items.all().delete()
             
             messages.success(request, f'Заказ #{order.id} успешно создан!')
             return redirect('order_detail', order_id=order.id)
+        else:
+            # Если форма не валидна, показываем ошибки
+            messages.error(request, 'Пожалуйста, исправьте ошибки в форме')
     else:
-        # Предзаполняем адрес доставки из профиля
-        initial = {'shipping_address': request.user.get_full_address()}
-        form = OrderForm(initial=initial)
+        form = OrderForm()
     
-    context = {
-        'cart': cart,
+    return render(request, 'catalog/checkout.html', {
         'form': form,
-    }
-    return render(request, 'catalog/checkout.html', context)
+        'cart': cart
+    })
 
 @login_required
 def order_detail(request, order_id):
@@ -273,11 +294,6 @@ def order_cancel(request, order_id):
         # Меняем статус заказа
         order.status = 'cancelled'
         order.save()
-        
-        # Здесь можно добавить другую логику, например:
-        # - Отправить email уведомление
-        # - Вернуть товары на склад (увеличить stock)
-        # - Инициировать возврат денег через платежную систему
         
         messages.success(request, f'Заказ №{order_id} был успешно отменен.')
     
@@ -329,18 +345,21 @@ def admin_dashboard(request):
     log_entries = LogEntry.objects.select_related('user', 'content_type').order_by('-action_time')[:10]
     
     for action in log_entries:
-        action_dict = {
+        # Определяем тип действия
+        action_types = {
             LogEntry.ADDITION: 'Добавлен',
-            LogEntry.CHANGE: 'Изменен',
+            LogEntry.CHANGE: 'Изменен', 
             LogEntry.DELETION: 'Удален'
         }
         
-        action_name = action_dict.get(action.action_flag, 'Действие')
+        action_name = action_types.get(action.action_flag, 'Действие')
         object_name = str(action.object_repr)
         
+        # Обрезаем длинное название
         if len(object_name) > 30:
             object_name = object_name[:27] + '...'
         
+        # Форматируем действие
         formatted_action = f"{action_name} {action.content_type}: {object_name}"
         
         recent_actions.append({
@@ -348,7 +367,8 @@ def admin_dashboard(request):
             'action_time': action.action_time,
             'formatted_action': formatted_action,
             'content_type': action.content_type.model,
-            'action_flag': action.action_flag
+            'action_flag': action.action_flag,
+            'object_name': object_name
         })
     # Данные для графиков
     # График продаж по дням за последние 7 дней
@@ -363,11 +383,7 @@ def admin_dashboard(request):
         sales_data.append(float(daily_sales))
         dates.append(date.strftime('%d.%m'))
     
-    
-    # График популярных категорий
-    category_data = []
-    category_labels = []
-    category_colors = ['#ff6384', '#36a2eb', '#ffcd56', '#4bc0c0', '#9966ff', '#ff9f40', '#c9cbcf']
+
     
     popular_categories = Category.objects.annotate(
         book_count=Count('books')
@@ -390,7 +406,7 @@ def admin_dashboard(request):
         
         'order_stats': Order.objects.values('status').annotate(count=Count('id')),
         
-        'latest_orders': Order.objects.select_related('user').order_by('-created_at')[:10],
+        'latest_orders': Order.objects.select_related('user').order_by('-created_at')[:4],
         
         'low_stock_books': Book.objects.filter(stock_quantity__lt=10).order_by('stock_quantity')[:5],
         

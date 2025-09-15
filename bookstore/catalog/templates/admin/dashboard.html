@@ -81,22 +81,50 @@
     <div class="col-md-6">
         <div class="admin-card">
             <div class="admin-card-header">
-                <h5 class="mb-0">Последние действия</h5>
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>Последние действия
+                </h5>
             </div>
             <div class="admin-card-body">
-                {% for action in recent_actions %}
-                <div class="d-flex align-items-center mb-3 p-3 border rounded">
-                    <div class="flex-grow-1">
-                        <h6 class="mb-1">{{ action.user.get_full_name|default:action.user.username }}</h6>
-                        <p class="mb-1 small text-muted">{{ action.formatted_action }}</p>
-                        <small class="text-muted">{{ action.action_time|timesince }} назад</small>
+                {% if recent_actions %}
+                    {% for action in recent_actions %}
+                    <div class="d-flex align-items-center mb-3 p-3 border rounded action-item 
+                                {% if action.action_flag == 1 %}action-addition
+                                {% elif action.action_flag == 2 %}action-change
+                                {% elif action.action_flag == 3 %}action-deletion
+                                {% endif %}">
+                        <div class="flex-shrink-0 me-3">
+                            <div class="action-icon">
+                                {% if action.action_flag == 1 %}
+                                    <i class="fas fa-plus-circle text-success"></i>
+                                {% elif action.action_flag == 2 %}
+                                    <i class="fas fa-edit text-warning"></i>
+                                {% elif action.action_flag == 3 %}
+                                    <i class="fas fa-trash-alt text-danger"></i>
+                                {% else %}
+                                    <i class="fas fa-cog text-info"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h6 class="mb-1">{{ action.user.get_full_name|default:action.user.username }}</h6>
+                                <small class="text-muted">{{ action.action_time|timesince }} назад</small>
+                            </div>
+                            <p class="mb-1 small">{{ action.formatted_action }}</p>
+                            <small class="text-muted">{{ action.content_type|capfirst }}</small>
+                        </div>
                     </div>
-                </div>
-                {% endfor %}
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-history fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">Нет действий для отображения</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
-
     <!-- Книги с низким запасом -->
     <div class="col-md-6">
         <div class="admin-card">
