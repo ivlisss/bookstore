@@ -77,54 +77,47 @@
 </div>
 
 <div class="row mt-4">
-    <!-- Последние действия -->
+    <!-- Быстрые действия -->
     <div class="col-md-6">
         <div class="admin-card">
             <div class="admin-card-header">
                 <h5 class="mb-0">
-                    <i class="fas fa-history me-2"></i>Последние действия
+                    <i class="fas fa-bolt me-2"></i>Быстрые действия
                 </h5>
             </div>
             <div class="admin-card-body">
-                {% if recent_actions %}
-                    {% for action in recent_actions %}
-                    <div class="d-flex align-items-center mb-3 p-3 border rounded action-item 
-                                {% if action.action_flag == 1 %}action-addition
-                                {% elif action.action_flag == 2 %}action-change
-                                {% elif action.action_flag == 3 %}action-deletion
-                                {% endif %}">
-                        <div class="flex-shrink-0 me-3">
-                            <div class="action-icon">
-                                {% if action.action_flag == 1 %}
-                                    <i class="fas fa-plus-circle text-success"></i>
-                                {% elif action.action_flag == 2 %}
-                                    <i class="fas fa-edit text-warning"></i>
-                                {% elif action.action_flag == 3 %}
-                                    <i class="fas fa-trash-alt text-danger"></i>
-                                {% else %}
-                                    <i class="fas fa-cog text-info"></i>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="flex-grow-1">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <h6 class="mb-1">{{ action.user.get_full_name|default:action.user.username }}</h6>
-                                <small class="text-muted">{{ action.action_time|timesince }} назад</small>
-                            </div>
-                            <p class="mb-1 small">{{ action.formatted_action }}</p>
-                            <small class="text-muted">{{ action.content_type|capfirst }}</small>
-                        </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <a href="{% url 'admin_book_create' %}?action=add" class="btn admin-btn-primary btn-lg w-100 mb-2">
+                            <i class="fas fa-plus me-1"></i>Добавить книгу
+                        </a>
                     </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="text-center py-4">
-                        <i class="fas fa-history fa-2x text-muted mb-2"></i>
-                        <p class="text-muted mb-0">Нет действий для отображения</p>
+                    <div class="col-md-6">
+                        <a href="{% url 'admin_orders' %}" class="btn admin-btn-primary w-100 mb-2">
+                            <i class="fas fa-eye me-1"></i>Просмотреть заказы
+                        </a>
                     </div>
-                {% endif %}
+                    <div class="col-md-6">
+                        <a href="{% url 'admin_users' %}" class="btn admin-btn-primary w-100 mb-2">
+                            <i class="fas fa-user-plus me-1"></i>Просмотреть пользователей
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{% url 'home' %}" class="btn admin-btn-primary w-100 mb-2">
+                            <i class="fas fa-tag me-1"></i>Вернуться на сайт
+                        </a>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="text-center">
+                    <small class="text-muted">Последнее обновление: {% now "H:i" %}</small>
+                </div>
             </div>
         </div>
     </div>
+
     <!-- Книги с низким запасом -->
     <div class="col-md-6">
         <div class="admin-card">

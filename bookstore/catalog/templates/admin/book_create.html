@@ -192,11 +192,13 @@
     <!-- Кнопки действий -->
     <div class="d-flex gap-3 mt-4 pt-4 border-top">
         <button type="submit" class="btn btn-primary btn-lg">
-            <i class="fas fa-plus-circle me-2"></i>Создать книгу
+            <i class="fas fa-plus-circle me-1"></i>Создать книгу
         </button>
-        <a href="{% url 'admin_books' %}" class="btn btn-secondary">Отмена</a>
+        <a href="{% url 'admin_books' %}" class="btn btn-secondary">
+    <i class="fas fa-arrow-left"></i> Назад к списку
+    </a>
         <button type="reset" class="btn btn-outline-secondary ms-auto">
-            <i class="fas fa-undo me-2"></i>Очистить форму
+            <i class="fas fa-undo me-1"></i>Очистить форму
         </button>
     </div>
 </form>

@@ -15,7 +15,7 @@
         {% endif %}
     </div>
 
-    <div class="col-md-7">
+    <div class="col-md-7 px-5">
         <h1 class="display-5 fw-bold">{{ book.title }}</h1>
         <p class="text-muted">Автор: {{ book.author.first_name }} {{ book.author.last_name }}</p>
         
@@ -45,7 +45,7 @@
             </div>
         </div>
 
-        <div class="d-grid gap-2 d-md-flex">
+        <div class="d-grid gap-2 d-md-flex justify-content-center">
             {% if book.stock_quantity > 0 %}
             <form method="post" action="{% url 'cart' %}" class="me-md-2">
                 {% csrf_token %}
@@ -59,7 +59,7 @@
                 <i class="fas fa-times"></i> Нет в наличии
             </button>
             {% endif %}
-            <a href="{% url 'book_list' %}" class="btn btn-outline-secondary btn-lg">
+            <a href="{% url 'book_list' %}" class="btn btn-outline-secondary btn-lg" style="width: 246.562px;">
                 <i class="fas fa-arrow-left"></i> Назад
             </a>
         </div>

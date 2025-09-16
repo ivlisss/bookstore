@@ -37,6 +37,7 @@
             padding: 0;
             margin: 0;
             list-style: none;
+            flex-wrap: wrap;
         }
         
         .admin-nav-item {
@@ -45,12 +46,13 @@
         
         .admin-nav-link {
             color: white !important;
-            padding: 1rem 1.5rem;
+            padding: 0.8rem 1rem;
             text-decoration: none;
             display: flex;
             align-items: center;
             transition: all 0.3s ease;
             border-bottom: 3px solid transparent;
+            font-size: 0.9rem;
         }
         
         .admin-nav-link:hover,
@@ -60,15 +62,27 @@
         }
         
         .admin-nav-link i {
-            margin-right: 8px;
-            font-size: 1.1em;
+            margin-right: 6px;
+            font-size: 1em;
+        }
+        
+        /* Мобильное меню */
+        .mobile-menu-btn {
+            display: none;
+            color: white;
+            font-size: 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
         }
         
         /* Основной контент */
         .admin-content {
-            padding: 2rem;
+            padding: 1.5rem;
             margin-left: 0;
-            min-height: calc(100vh - 80px);
+            min-height: calc(100vh - 70px);
+            transition: margin-top 0.3s ease;
         }
         
         /* Карточки */
@@ -91,20 +105,21 @@
             color: white;
             border-radius: 12px 12px 0 0 !important;
             border: none;
-            padding: 1.25rem 1.5rem;
+            padding: 1rem 1.25rem;
         }
         
         .admin-card-body {
-            padding: 1.5rem;
+            padding: 1.25rem;
         }
         
         /* Кнопки */
         .admin-btn {
             border-radius: 8px;
-            padding: 10px 20px;
+            padding: 8px 16px;
             font-weight: 600;
             transition: all 0.3s ease;
             border: none;
+            font-size: 0.9rem;
         }
         
         .admin-btn-primary {
@@ -120,8 +135,9 @@
         .admin-form .form-control {
             border: 2px solid var(--border-color);
             border-radius: 8px;
-            padding: 12px 15px;
+            padding: 10px 12px;
             transition: all 0.3s ease;
+            font-size: 0.9rem;
         }
         
         .admin-form .form-control:focus {
@@ -132,7 +148,8 @@
         .admin-form .form-label {
             font-weight: 600;
             color: var(--text-color);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
         }
         
         /* Таблицы */
@@ -141,6 +158,7 @@
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            font-size: 0.9rem;
         }
         
         .admin-table th {
@@ -148,11 +166,11 @@
             border: none;
             font-weight: 600;
             color: var(--text-color);
-            padding: 1rem;
+            padding: 0.8rem;
         }
         
         .admin-table td {
-            padding: 1rem;
+            padding: 0.8rem;
             vertical-align: middle;
             border-color: var(--border-color);
         }
@@ -160,7 +178,7 @@
         /* Статистические карточки */
         .stat-card {
             background: white;
-            padding: 1.5rem;
+            padding: 1.25rem;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             text-align: center;
@@ -172,7 +190,7 @@
         }
         
         .stat-number {
-            font-size: 2.5em;
+            font-size: 2em;
             font-weight: bold;
             color: var(--primary-color);
             margin-bottom: 0.5rem;
@@ -180,7 +198,7 @@
         
         .stat-label {
             color: #6c757d;
-            font-size: 0.9em;
+            font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -190,31 +208,157 @@
             border-radius: 8px;
             border: none;
             box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            font-size: 0.9rem;
         }
         
         /* Адаптивность */
-        @media (max-width: 768px) {
+        @media (max-width: 1200px) {
+            .admin-nav-link {
+                padding: 0.7rem 0.8rem;
+                font-size: 0.85rem;
+            }
+            
+            .admin-nav-link i {
+                margin-right: 4px;
+                font-size: 0.9em;
+            }
+        }
+        
+        @media (max-width: 992px) {
             .admin-nav {
-                flex-direction: column;
-                width: 100%;
+                flex-wrap: wrap;
+                justify-content: center;
             }
             
             .admin-nav-item {
-                width: 100%;
+                flex: 1 0 25%;
             }
             
             .admin-nav-link {
-                padding: 1rem;
+                padding: 0.6rem 0.5rem;
+                font-size: 0.8rem;
                 justify-content: center;
+                text-align: center;
+            }
+            
+            .admin-nav-link i {
+                display: block;
+                margin: 0 auto 4px auto;
+                font-size: 0.9em;
+            }
+            
+            .admin-nav-link span {
+                display: block;
+                font-size: 0.75rem;
             }
             
             .admin-content {
                 padding: 1rem;
             }
+        }
+        
+        @media (max-width: 768px) {
+            .admin-header {
+                position: relative;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .admin-nav {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                position: relative;
+                background: var(--secondary-color);
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease;
+            }
+            
+            .admin-nav.show {
+                display: flex;
+                max-height: 500px;
+            }
+            
+            .admin-nav-item {
+                width: 100%;
+                flex: none;
+            }
+            
+            .admin-nav-link {
+                padding: 0.8rem 1rem;
+                font-size: 0.9rem;
+                justify-content: flex-start;
+                text-align: left;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+            }
+            
+            .admin-nav-link i {
+                display: inline-block;
+                margin-right: 8px;
+                margin-bottom: 0;
+            }
+            
+            .admin-nav-link span {
+                display: inline;
+                font-size: inherit;
+            }
+            
+            .admin-content {
+                padding: 0.8rem;
+                min-height: calc(100vh - 60px);
+            }
             
             .stat-number {
-                font-size: 2em;
+                font-size: 1.5em;
             }
+            
+            .stat-card {
+                padding: 1rem;
+            }
+            
+            /* Сдвигаем контент при открытом меню */
+            body.menu-open .admin-content {
+                margin-top: 0;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .admin-nav-link {
+                padding: 0.7rem 0.8rem;
+                font-size: 0.85rem;
+            }
+            
+            .admin-content {
+                padding: 0.5rem;
+            }
+            
+            .stat-number {
+                font-size: 1.3em;
+            }
+            
+            .stat-label {
+                font-size: 0.7rem;
+            }
+        }
+        
+        /* Компактный режим для текста */
+        .text-compact {
+            font-size: 0.9rem;
+            line-height: 1.3;
+        }
+        
+        /* Утилиты для компактного отображения */
+        .compact-mode .admin-card-body {
+            padding: 1rem;
+        }
+        
+        .compact-mode .admin-table th,
+        .compact-mode .admin-table td {
+            padding: 0.6rem;
         }
     </style>
 </head>
@@ -225,66 +369,78 @@
             <div class="d-flex justify-content-between align-items-center py-2">
                 <!-- Логотип и название -->
                 <div class="d-flex align-items-center">
+                    <button class="mobile-menu-btn me-2" id="mobileMenuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
                     <a href="{% url 'admin_dashboard' %}" class="text-white text-decoration-none">
-                        <h4 class="mb-0">
-                            <i class="fas fa-book me-2"></i>
+                        <h5 class="mb-0 text-compact">
+                            <i class="fas fa-book me-1"></i>
                             Админ-панель
-                        </h4>
+                        </h5>
                     </a>
                 </div>
 
                 <!-- Правая часть: пользователь и выход -->
                 <div class="d-flex align-items-center">
-                    <span class="text-white me-3">
+                    <span class="text-white me-2 text-compact d-none d-sm-block">
                         <i class="fas fa-user me-1"></i>
                         {{ user.username }}
                     </span>
-                    <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-light">
-                        <i class="fas fa-sign-out-alt me-1"></i>Выйти
+                    <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-light text-compact">
+                        <i class="fas fa-sign-out-alt me-1"></i>
+                        <span class="d-none d-md-inline">Выйти</span>
                     </a>
                 </div>
             </div>
 
             <!-- Основное меню навигации -->
-            <nav class="admin-nav">
+            <nav class="admin-nav" id="adminNav">
                 <li class="admin-nav-item">
                     <a href="{% url 'admin_dashboard' %}" class="admin-nav-link {% if request.path == '/admin/dashboard/' %}active{% endif %}">
-                        <i class="fas fa-tachometer-alt"></i>Дашборд
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Дашборд</span>
                     </a>
                 </li>
                 <li class="admin-nav-item">
                     <a href="{% url 'admin_books' %}" class="admin-nav-link {% if '/admin/books/' in request.path %}active{% endif %}">
-                        <i class="fas fa-book"></i>Книги
+                        <i class="fas fa-book"></i>
+                        <span>Книги</span>
                     </a>
                 </li>
                 <li class="admin-nav-item">
                     <a href="{% url 'admin_orders' %}" class="admin-nav-link {% if '/admin/orders/' in request.path %}active{% endif %}">
-                        <i class="fas fa-shopping-cart"></i>Заказы
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Заказы</span>
                     </a>
                 </li>
                 <li class="admin-nav-item">
                     <a href="{% url 'admin_users' %}" class="admin-nav-link {% if '/admin/users/' in request.path %}active{% endif %}">
-                        <i class="fas fa-users"></i>Пользователи
+                        <i class="fas fa-users"></i>
+                        <span>Пользователи</span>
                     </a>
                 </li>
                 <li class="admin-nav-item">
                     <a href="{% url 'admin_categories' %}" class="admin-nav-link {% if '/admin/categories/' in request.path %}active{% endif %}">
-                        <i class="fas fa-tags"></i>Категории
+                        <i class="fas fa-tags"></i>
+                        <span>Категории</span>
                     </a>
                 </li>
                 <li class="admin-nav-item">
                     <a href="{% url 'admin_authors' %}" class="admin-nav-link {% if '/admin/authors/' in request.path %}active{% endif %}">
-                        <i class="fas fa-pen"></i>Авторы
+                        <i class="fas fa-pen"></i>
+                        <span>Авторы</span>
                     </a>
                 </li>
                 <li class="admin-nav-item">
                     <a href="{% url 'admin_publishers' %}" class="admin-nav-link {% if '/admin/publishers/' in request.path %}active{% endif %}">
-                        <i class="fas fa-building"></i>Издательства
+                        <i class="fas fa-building"></i>
+                        <span>Издательства</span>
                     </a>
                 </li>
                 <li class="admin-nav-item">
                     <a href="{% url 'home' %}" class="admin-nav-link">
-                        <i class="fas fa-home"></i>На сайт
+                        <i class="fas fa-home"></i>
+                        <span>На сайт</span>
                     </a>
                 </li>
             </nav>
@@ -295,7 +451,7 @@
     <main class="admin-content">
         <!-- Уведомления -->
         {% if messages %}
-        <div class="mb-4">
+        <div class="mb-3">
             {% for message in messages %}
             <div class="alert alert-{{ message.tags }} admin-alert alert-dismissible fade show">
                 {{ message }}
@@ -306,8 +462,8 @@
         {% endif %}
 
         <!-- Заголовок страницы -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="mb-0">{% block page_title %}{% endblock %}</h2>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="mb-0 text-compact">{% block page_title %}{% endblock %}</h3>
             <div>{% block page_actions %}{% endblock %}</div>
         </div>
 
@@ -318,31 +474,63 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Активное меню
+        // Управление мобильным меню
         document.addEventListener('DOMContentLoaded', function() {
-            // Подсветка активного пункта меню
-            const currentPath = window.location.pathname;
-            const navLinks = document.querySelectorAll('.admin-nav-link');
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const adminNav = document.getElementById('adminNav');
+            const body = document.body;
             
-            navLinks.forEach(link => {
-                if (link.href.includes(currentPath) && currentPath !== '/admin/') {
-                    link.classList.add('active');
-                }
-            });
-            
-            // Плавная прокрутка
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    const target = document.querySelector(this.getAttribute('href'));
-                    if (target) {
-                        target.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
+            if (mobileMenuBtn && adminNav) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    const isOpening = !adminNav.classList.contains('show');
+                    adminNav.classList.toggle('show');
+                    body.classList.toggle('menu-open', isOpening);
+                    
+                    // Плавная прокрутка к верху при открытии меню
+                    if (isOpening) {
+                        window.scrollTo({
+                            top: 0,
+                            behavior: 'smooth'
                         });
                     }
                 });
+            }
+            
+            // Закрытие меню при клике на пункт
+            const navLinks = document.querySelectorAll('.admin-nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth < 768) {
+                        adminNav.classList.remove('show');
+                        adminNav.style.maxHeight = '0';
+                        body.classList.remove('menu-open');
+                    }
+                });
             });
+            
+            // Закрытие меню при изменении размера окна
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 768) {
+                    adminNav.classList.remove('show');
+                    adminNav.style.maxHeight = '';
+                    body.classList.remove('menu-open');
+                }
+            });
+            
+            // Автоматическое определение компактного режима
+            function checkCompactMode() {
+                if (window.innerWidth < 768) {
+                    document.body.classList.add('compact-mode');
+                } else {
+                    document.body.classList.remove('compact-mode');
+                    adminNav.classList.remove('show');
+                    adminNav.style.maxHeight = '';
+                }
+            }
+            
+            // Проверяем при загрузке и изменении размера
+            checkCompactMode();
+            window.addEventListener('resize', checkCompactMode);
         });
     </script>
     

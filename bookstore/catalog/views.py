@@ -4,7 +4,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q, Count, Prefetch, Sum
+from django.db.models import Q, Count, Prefetch, Sum, Value
+from django.db.models.functions import Lower, Concat
 from django.core.paginator import Paginator
 from .models import Book, Category, Author, Order, OrderItem, Cart, CartItem
 from .forms import LoginForm, RegisterForm, UserProfileForm, OrderForm
@@ -42,26 +43,38 @@ def home(request):
 def book_list(request):
     books = Book.objects.all()
     
-    # Фильтрация
-    category_slug = request.GET.get('category')
+    # Поиск
+    query = request.GET.get('search')
+    if query:
+        # Базовый поиск (без учета регистра)
+        books = books.filter(
+            Q(title__icontains=query) | 
+            Q(description__icontains=query) |
+            Q(author__first_name__icontains=query) |
+            Q(author__last_name__icontains=query)
+        )
+        
+        # Дополнительный поиск: если запрос в нижнем регистре, 
+        # ищем также с первой заглавной буквой
+        if query and query[0].islower():
+            query_capitalized = query.capitalize()
+            books = books | Book.objects.filter(
+                Q(title__icontains=query_capitalized) | 
+                Q(description__icontains=query_capitalized) |
+                Q(author__first_name__icontains=query_capitalized) |
+                Q(author__last_name__icontains=query_capitalized)
+            )
+    # Фильтрация по автору
     author_id = request.GET.get('author')
-    search_query = request.GET.get('search')
-    min_price = request.GET.get('min_price')
-    max_price = request.GET.get('max_price')
-    
-    if category_slug:
-        books = books.filter(categories__slug=category_slug)
     if author_id:
         books = books.filter(author_id=author_id)
-    if search_query:
-        books = books.filter(
-            Q(title__icontains=search_query) |
-            Q(description__icontains=search_query) |
-            Q(author__first_name__icontains=search_query) |
-            Q(author__last_name__icontains=search_query)
-        )
+    
+    # Фильтрация по цене
+    min_price = request.GET.get('min_price')
     if min_price:
         books = books.filter(price__gte=min_price)
+    
+    max_price = request.GET.get('max_price')
     if max_price:
         books = books.filter(price__lte=max_price)
     
@@ -77,7 +90,7 @@ def book_list(request):
         'page_obj': page_obj,
         'categories': categories,
         'authors': authors,
-        'search_query': search_query,
+        'search_query': query,
     }
     return render(request, 'catalog/book_list.html', context)
 
@@ -153,6 +166,11 @@ def profile(request):
     return render(request, 'catalog/profile.html', context)
 
 
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import Cart, CartItem, Book
+
 @login_required
 def cart_view(request):
     try:
@@ -161,6 +179,13 @@ def cart_view(request):
         cart = Cart.objects.create(user=request.user)
     
     if request.method == 'POST':
+        # Обработка очистки корзины
+        if 'clear_cart' in request.POST:
+            cart.items.all().delete()
+            messages.success(request, 'Корзина очищена')
+            return redirect('cart')
+        
+        # Обработка добавления товара
         book_id = request.POST.get('book_id')
         quantity = int(request.POST.get('quantity', 1))
         
