@@ -372,7 +372,7 @@
                     <button class="mobile-menu-btn me-2" id="mobileMenuBtn">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <a href="{% url 'admin_dashboard' %}" class="text-white text-decoration-none">
+                    <a href="{% url 'admin_statistics' %}" class="text-white text-decoration-none">
                         <h5 class="mb-0 text-compact">
                             <i class="fas fa-book me-1"></i>
                             Админ-панель
@@ -396,9 +396,9 @@
             <!-- Основное меню навигации -->
             <nav class="admin-nav" id="adminNav">
                 <li class="admin-nav-item">
-                    <a href="{% url 'admin_dashboard' %}" class="admin-nav-link {% if request.path == '/admin/dashboard/' %}active{% endif %}">
+                    <a href="{% url 'admin_statistics' %}" class="admin-nav-link {% if request.path == '/admin/statistics/' %}active{% endif %}">
                         <i class="fas fa-tachometer-alt"></i>
-                        <span>Дашборд</span>
+                        <span>Статистика</span>
                     </a>
                 </li>
                 <li class="admin-nav-item">

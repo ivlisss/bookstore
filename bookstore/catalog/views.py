@@ -333,7 +333,7 @@ def order_cancel(request, order_id):
 def admin_access_required(request):
     if not request.user.is_admin():
         return HttpResponseForbidden("У вас нет прав доступа к админ-панели")
-    return redirect('admin_dashboard')
+    return redirect('admin_statistics')
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -362,7 +362,7 @@ def admin_required(view_func):
         return view_func(request, *args, **kwargs)
     return _wrapped_view
 
-def admin_dashboard(request):
+def admin_statistics(request):
     # Статистика за последние 30 дней
     thirty_days_ago = timezone.now() - timedelta(days=30)
 
@@ -443,7 +443,7 @@ def admin_dashboard(request):
         'recent_actions': recent_actions,
     }
     
-    return render(request, 'admin/dashboard.html', context)
+    return render(request, 'admin/statistics.html', context)
 @admin_required
 def admin_books(request):
     books = Book.objects.select_related('author', 'publisher').prefetch_related('categories').all()

@@ -31,7 +31,7 @@ urlpatterns = [
     
     # Админ-маршруты
     path('admin/', views.admin_access_required, name='admin_redirect'),
-    path('admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('admin/statistics/', views.admin_statistics, name='admin_statistics'),
     path('admin/books/', views.admin_books, name='admin_books'),
     path('admin/books/create/', views.admin_book_create, name='admin_book_create'),
     path('admin/books/<int:book_id>/', views.admin_book_detail, name='admin_book_detail'),
