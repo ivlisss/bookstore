@@ -305,28 +305,21 @@ def order_list(request):
 # @require_POST # Разрешаем только POST-запросы
 @login_required
 def order_cancel(request, order_id):
-    # Получаем заказ или возвращаем 404
-    # Важно: фильтруем по текущему пользователю, чтобы нельзя было отменить чужой заказ!
     order = get_object_or_404(Order, id=order_id, user=request.user)
     
-    # Проверяем, можно ли отменить заказ (например, только из определенных статусов)
     if order.status not in ['pending', 'processing']:
         messages.error(request, f'Невозможно отменить заказ №{order_id} в статусе "{order.get_status_display()}".')
         return redirect('order_detail', order_id=order.id)
     
-    # Логика отмены
     try:
-        # Меняем статус заказа
         order.status = 'cancelled'
         order.save()
         
         messages.success(request, f'Заказ №{order_id} был успешно отменен.')
     
     except Exception as e:
-        # Ловим возможные ошибки при сохранении
         messages.error(request, f'Произошла ошибка при отмене заказа: {e}')
     
-    # Перенаправляем обратно на страницу деталей заказа
     return redirect('order_detail', order_id=order.id)
 
 @login_required
@@ -336,7 +329,7 @@ def admin_access_required(request):
     return redirect('admin_statistics')
 
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count, Sum, Q
 from django.utils import timezone
@@ -676,7 +669,9 @@ def admin_publishers(request):
     }
     
     return render(request, 'admin/publishers.html', context)
-# Authentication Views
+
+
+# API
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
     
