@@ -44,7 +44,7 @@
                             <a href="#" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editPublisherModal{{ publisher.id }}">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <a href="#" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deletePublisherModal{{ publisher.id }}">
+                            <a href="{% url 'admin_publisher_delete' publisher.id %}" class="btn btn-sm btn-outline-danger">
                                 <i class="fas fa-trash"></i>
                             </a>
                         </td>
@@ -75,7 +75,7 @@
                                             <input type="url" name="website" class="form-control" value="{{ publisher.website }}">
                                         </div>
                                         <div class="d-flex gap-2">
-                                            <button type="submit" class="btn btn-primary">Сохранить</button>
+                                            <button type="submit" class="btn btn-primary" name="edit_publisher">Сохранить</button>
                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
                                         </div>
                                     </form>
@@ -84,34 +84,6 @@
                         </div>
                     </div>
 
-                    <!-- Модальное окно удаления издательства -->
-                    <div class="modal fade" id="deletePublisherModal{{ publisher.id }}" tabindex="-1">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Удаление издательства</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="alert alert-danger">
-                                        <h5><i class="fas fa-exclamation-triangle"></i> Внимание!</h5>
-                                        <p>Вы собираетесь удалить издательство:</p>
-                                        <h4>{{ publisher.name }}</h4>
-                                        <p>Количество книг: {{ publisher.book_count }}</p>
-                                        <p>Это действие нельзя отменить!</p>
-                                    </div>
-                                    <form method="post" action="{% url 'admin_publishers' %}">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="delete_publisher" value="{{ publisher.id }}">
-                                        <div class="d-flex gap-2">
-                                            <button type="submit" class="btn btn-danger">Удалить</button>
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                     {% empty %}
                     <tr>
                         <td colspan="5" class="text-center py-4">Издательства не найдены</td>
@@ -147,7 +119,7 @@
                         <input type="url" name="website" class="form-control">
                     </div>
                     <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">Добавить</button>
+                        <button type="submit" class="btn btn-primary" name="add_publisher">Добавить</button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
                     </div>
                 </form>
@@ -249,44 +221,4 @@
         transform: translateY(-1px);
     }
 </style>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Обработка отправки форм в модальных окнах
-        const modalForms = document.querySelectorAll('.modal-form');
-        
-        modalForms.forEach(form => {
-            form.addEventListener('submit', function(e) {
-                const submitBtn = this.querySelector('button[type="submit"]');
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Сохранение...';
-                
-                // Здесь можно добавить AJAX отправку если нужно
-            });
-        });
-        
-        // Сброс формы при закрытии модального окна
-        const modals = document.querySelectorAll('.modal');
-        modals.forEach(modal => {
-            modal.addEventListener('hidden.bs.modal', function() {
-                const form = this.querySelector('form');
-                if (form) {
-                    form.reset();
-                    const submitBtn = form.querySelector('button[type="submit"]');
-                    if (submitBtn) {
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = submitBtn.getAttribute('data-original-text');
-                    }
-                }
-            });
-            
-            // Сохраняем оригинальный текст кнопки
-            modal.addEventListener('show.bs.modal', function() {
-                const submitBtn = this.querySelector('button[type="submit"]');
-                if (submitBtn && !submitBtn.getAttribute('data-original-text')) {
-                    submitBtn.setAttribute('data-original-text', submitBtn.innerHTML);
-                }
-            });
-        });
-    });
-</script>
 {% endblock %}

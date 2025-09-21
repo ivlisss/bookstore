@@ -627,43 +627,93 @@ def admin_category_delete(request, category_id):
 
 @admin_required
 def admin_authors(request):
-    authors = Author.objects.annotate(book_count=Count('books'))
-    
     if request.method == 'POST':
-        form = AuthorForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Автор создан!')
-            return redirect('admin_authors')
-    else:
-        form = AuthorForm()
+        if 'edit_author' in request.POST:
+            # Редактирование существующего автора
+            author_id = request.POST.get('author_id')
+            author = get_object_or_404(Author, id=author_id)
+            author.first_name = request.POST.get('first_name')
+            author.last_name = request.POST.get('last_name')
+            author.birth_date = request.POST.get('birth_date')
+            author.website = request.POST.get('website')
+            author.bio = request.POST.get('bio')
+            author.save()
+            messages.success(request, 'Автор обновлен!')
+            
+        elif 'add_author' in request.POST:
+            # Добавление нового автора
+            Author.objects.create(
+                first_name=request.POST.get('first_name'),
+                last_name=request.POST.get('last_name'),
+                birth_date=request.POST.get('birth_date'),
+                website=request.POST.get('website'),
+                bio=request.POST.get('bio')
+            )
+            messages.success(request, 'Автор добавлен!')
+        
+        return redirect('admin_authors')
     
-    context = {
-        'authors': authors,
-        'form': form,
-    }
-    
+    # GET запрос - показать список авторов
+    authors = Author.objects.annotate(book_count=Count('books'))
+    context = {'authors': authors}
     return render(request, 'admin/authors.html', context)
 
 @admin_required
-def admin_publishers(request):
-    publishers = Publisher.objects.annotate(book_count=Count('books'))
+def admin_author_delete(request, author_id):
+    author = get_object_or_404(Author, id=author_id)
     
     if request.method == 'POST':
-        form = PublisherForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Издательство создано!')
-            return redirect('admin_publishers')
-    else:
-        form = PublisherForm()
+        author.delete()
+        messages.success(request, 'Автор удален!')
+        return redirect('admin_authors')
     
     context = {
-        'publishers': publishers,
-        'form': form,
+        'author': author,
     }
+    return render(request, 'admin/author_delete.html', context)
+
+@admin_required
+def admin_publishers(request):
+    if request.method == 'POST':
+        if 'edit_publisher' in request.POST:
+            # Редактирование существующего издательства
+            publisher_id = request.POST.get('publisher_id')
+            publisher = get_object_or_404(Publisher, id=publisher_id)
+            publisher.name = request.POST.get('name')
+            publisher.address = request.POST.get('address')
+            publisher.website = request.POST.get('website')
+            publisher.save()
+            messages.success(request, 'Издательство обновлено!')
+            
+        elif 'add_publisher' in request.POST:
+            # Добавление нового издательства
+            Publisher.objects.create(
+                name=request.POST.get('name'),
+                address=request.POST.get('address'),
+                website=request.POST.get('website')
+            )
+            messages.success(request, 'Издательство добавлено!')
+        
+        return redirect('admin_publishers')
     
+    # GET запрос - показать список издательств
+    publishers = Publisher.objects.annotate(book_count=Count('books'))
+    context = {'publishers': publishers}
     return render(request, 'admin/publishers.html', context)
+
+@admin_required
+def admin_publisher_delete(request, publisher_id):
+    publisher = get_object_or_404(Publisher, id=publisher_id)
+    
+    if request.method == 'POST':
+        publisher.delete()
+        messages.success(request, 'Издательство удалено!')
+        return redirect('admin_publishers')
+    
+    context = {
+        'publisher': publisher,
+    }
+    return render(request, 'admin/publisher_delete.html', context)
 
 
 # API

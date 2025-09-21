@@ -1,0 +1,32 @@
+{% extends 'admin/base.html' %}
+
+{% block page_title %}Удаление издательства{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4>Удаление издательства</h4>
+            </div>
+            <div class="card-body text-center">
+                <div class="alert alert-danger">
+                    <h5><i class="fas fa-exclamation-triangle"></i> Внимание!</h5>
+                    <p>Вы собираетесь удалить издательство:</p>
+                    <h4>"{{ publisher.name }}"</h4>
+                    <p>Количество книг издательства: {{ publisher.book_count }}</p>
+                    <p>Это действие нельзя отменить!</p>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex gap-2 justify-content-center">
+                        <button type="submit" class="btn btn-danger">Удалить</button>
+                        <a href="{% url 'admin_publishers' %}" class="btn btn-secondary">Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

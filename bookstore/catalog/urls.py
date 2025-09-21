@@ -41,6 +41,8 @@ urlpatterns = [
     path('admin/users/', views.admin_users, name='admin_users'),
     path('admin/categories/', views.admin_categories, name='admin_categories'),
     path('admin/categories/<int:category_id>/delete/', views.admin_category_delete, name='admin_category_delete'),
+    path('admin/authors/<int:author_id>/delete/', views.admin_author_delete, name='admin_author_delete'),
+    path('admin/publishers/<int:publisher_id>/delete/', views.admin_publisher_delete, name='admin_publisher_delete'),
     path('admin/authors/', views.admin_authors, name='admin_authors'),
     path('admin/publishers/', views.admin_publishers, name='admin_publishers'),
 
