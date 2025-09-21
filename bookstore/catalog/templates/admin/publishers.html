@@ -125,37 +125,29 @@
 
 <!-- Модальное окно добавления издательства -->
 <div class="modal fade" id="addPublisherModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Добавить издательство</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form method="post" class="admin-form">
+                <form method="post" action="{% url 'admin_publishers' %}">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <label class="form-label">Название издательства *</label>
-                        {{ form.name }}
-                        {% if form.name.errors %}
-                        <div class="text-danger small">{{ form.name.errors.0 }}</div>
-                        {% endif %}
+                        <label class="form-label">Название *</label>
+                        <input type="text" name="name" class="form-control" required>
                     </div>
-
                     <div class="mb-3">
                         <label class="form-label">Адрес</label>
-                        {{ form.address }}
+                        <textarea name="address" class="form-control" rows="3"></textarea>
                     </div>
-
                     <div class="mb-3">
                         <label class="form-label">Веб-сайт</label>
-                        {{ form.website }}
+                        <input type="url" name="website" class="form-control">
                     </div>
-
-                    <div class="d-flex gap-2 pt-3 border-top">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-plus-circle me-2"></i>Добавить издательство
-                        </button>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Добавить</button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
                     </div>
                 </form>
@@ -163,52 +155,98 @@
         </div>
     </div>
 </div>
+
 <style>
-    .admin-form .modal-content {
-        border-radius: 12px;
+    .modal-content {
+        border-radius: 8px;
         border: none;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
     }
     
-    .admin-form .modal-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 12px 12px 0 0;
-        border: none;
-        padding: 20px 25px;
+    .modal-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        padding: 1rem 1.5rem;
     }
     
-    .admin-form .modal-title {
+    .modal-title {
         font-weight: 600;
-        font-size: 1.25rem;
+        color: #495057;
+        margin: 0;
     }
     
-    .admin-form .modal-body {
-        padding: 25px;
+    .modal-body {
+        padding: 1.5rem;
     }
     
-    .admin-form .btn-close {
-        filter: invert(1);
-        opacity: 0.8;
+    .btn-close {
+        opacity: 0.6;
     }
     
-    .admin-form .btn-close:hover {
+    .btn-close:hover {
         opacity: 1;
-    }
-    
-    .admin-form .border-top {
-        border-color: #e2e8f0 !important;
-        padding-top: 20px;
     }
     
     /* Анимация модального окна */
     .modal.fade .modal-dialog {
-        transform: translateY(-50px);
+        transform: translateY(-30px);
         transition: transform 0.3s ease-out;
     }
     
     .modal.show .modal-dialog {
         transform: translateY(0);
+    }
+    
+    /* Стили для форм */
+    .form-label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control {
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+        padding: 0.75rem;
+        transition: all 0.2s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+    }
+    
+    textarea.form-control {
+        resize: vertical;
+        min-height: 80px;
+    }
+    
+    /* Кнопки */
+    .btn {
+        border-radius: 6px;
+        padding: 0.625rem 1.25rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-secondary {
+        background-color: #6c757d;
+        border: none;
+    }
+    
+    .btn-secondary:hover {
+        background-color: #5a6268;
+        transform: translateY(-1px);
     }
 </style>
 <script>

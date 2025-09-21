@@ -48,29 +48,40 @@
 
 <!-- Модальное окно добавления категории -->
 <div class="modal fade" id="addCategoryModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Добавить категорию</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form method="post">
+                <form method="post" class="admin-form">
                     {% csrf_token %}
-                    <div class="mb-3">
-                        <label class="form-label">Название *</label>
-                        {{ form.name }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Название *</label>
+                                <input type="text" name="name" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Slug *</label>
+                                <input type="text" name="slug" class="form-control" required>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Slug *</label>
-                        {{ form.slug }}
-                    </div>
+
                     <div class="mb-3">
                         <label class="form-label">Описание</label>
-                        {{ form.description }}
+                        <textarea name="description" class="form-control" rows="4"></textarea>
                     </div>
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">Сохранить</button>
+
+                    <div class="d-flex gap-2 pt-3 border-top">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus-circle me-2"></i>Добавить категорию
+                        </button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
                     </div>
                 </form>
@@ -78,4 +89,114 @@
         </div>
     </div>
 </div>
+
+<style>
+    .admin-form .modal-content {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+    
+    .admin-form .modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px 12px 0 0;
+        border: none;
+        padding: 20px 25px;
+    }
+    
+    .admin-form .modal-title {
+        font-weight: 600;
+        font-size: 1.25rem;
+    }
+    
+    .admin-form .modal-body {
+        padding: 25px;
+    }
+    
+    .admin-form .btn-close {
+        filter: invert(1);
+        opacity: 0.8;
+    }
+    
+    .admin-form .btn-close:hover {
+        opacity: 1;
+    }
+    
+    .admin-form .form-label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+    
+    .admin-form .form-control {
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        padding: 0.75rem;
+        transition: all 0.2s ease;
+    }
+    
+    .admin-form .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+    }
+    
+    .admin-form textarea.form-control {
+        resize: vertical;
+        min-height: 100px;
+    }
+    
+    .admin-form .border-top {
+        border-color: #e2e8f0 !important;
+        padding-top: 20px;
+    }
+    
+    .admin-form .btn {
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    
+    .admin-form .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+    
+    .admin-form .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .admin-form .btn-secondary {
+        background-color: #6c757d;
+        border: none;
+    }
+    
+    .admin-form .btn-secondary:hover {
+        background-color: #5a6268;
+        transform: translateY(-1px);
+    }
+    
+    /* Анимация модального окна */
+    .modal.fade .modal-dialog {
+        transform: translateY(-50px);
+        transition: transform 0.3s ease-out;
+    }
+    
+    .modal.show .modal-dialog {
+        transform: translateY(0);
+    }
+        .btn {
+        border-radius: 6px;
+        padding: 0.625rem 1.25rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+</style>
 {% endblock %}
