@@ -120,8 +120,8 @@ class Publisher(models.Model):
 class Book(models.Model):
     title = models.CharField(max_length=200, verbose_name="Название")
     slug = models.SlugField(max_length=200, unique=True, verbose_name="URL книги")
-    author = models.ForeignKey(Author, related_name='books', on_delete=models.CASCADE, verbose_name="Автор")
-    publisher = models.ForeignKey(Publisher, related_name='books', on_delete=models.CASCADE, verbose_name="Издательство")
+    author = models.ForeignKey(Author, related_name='books', on_delete=models.SET_NULL, verbose_name="Автор", null=True)
+    publisher = models.ForeignKey(Publisher, related_name='books', on_delete=models.SET_NULL, verbose_name="Издательство", null=True)
     categories = models.ManyToManyField(Category, related_name='books', verbose_name="Категории")
     isbn = models.CharField(max_length=13, unique=True, verbose_name="ISBN") # ISBN-13
     description = models.TextField(blank=True, verbose_name="Описание")
