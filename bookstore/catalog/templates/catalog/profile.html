@@ -21,27 +21,12 @@
         <div class="col-lg-4">
             <!-- Карточка профиля -->
             <div class="card profile-card shadow-lg border-0">
-                <div class="card-body text-center p-4">
-                    <div class="mb-4">
-                        <div class="profile-avatar mx-auto">
-                            <i class="fas fa-user fa-2x text-white"></i>
-                            <div class="online-status"></div>
-                        </div>
-                    </div>
+                <div class="card-body text-center px-4">
                     
                     <h4 class="mb-2 fw-bold">{{ user.get_full_name|default:user.username }}</h4>
                     <p class="text-muted mb-3">@{{ user.username }}</p>
-                    
-                    <div class="rating mb-3">
-                        <i class="fas fa-star text-warning"></i>
-                        <i class="fas fa-star text-warning"></i>
-                        <i class="fas fa-star text-warning"></i>
-                        <i class="fas fa-star text-warning"></i>
-                        <i class="fas fa-star-half-alt text-warning"></i>
-                        <span class="ms-2 small text-muted">4.5/5</span>
-                    </div>
 
-                    <div class="d-grid gap-2">
+                    <div class="d-grid gap-2 mb-4">
                         <a href="{% url 'order_list' %}" class="btn btn-primary-gradient">
                             <i class="fas fa-shopping-bag me-2"></i>Мои заказы
                         </a>
@@ -78,8 +63,8 @@
                             <span class="text-muted">
                                 <i class="fas fa-cart-shopping me-2"></i>В корзине
                             </span>
-                            {% if cart_items_count > 0 %}
-                            <strong class="text-success fs-5">{{ cart_items_count }} шт.</strong>
+                            {% if cartItems > 0 %}
+                            <strong class="text-success fs-5">{{ cartItems }} шт.</strong>
                             {% else %}
                             <strong class="text-success fs-5">0 шт.</strong>
                             {% endif %}
@@ -197,7 +182,7 @@
                             <button type="submit" class="btn btn-primary-gradient">
                                 <i class="fas fa-save me-2"></i>Сохранить изменения
                             </button>
-                            <button type="reset" class="btn btn-outline-secondary">
+                            <button type="button" class="btn btn-outline-secondary" onclick="resetFormToOriginal()">
                                 <i class="fas fa-undo me-2"></i>Сбросить
                             </button>
                         </div>
@@ -290,127 +275,6 @@
 </div>
 
 
-{% endblock %}
-
-{% block extra_css %}
-<style>
-    .text-gradient {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-    
-    .profile-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 20px;
-    }
-    
-    .profile-avatar {
-        width: 100px;
-        height: 100px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        border: 3px solid rgba(255, 255, 255, 0.3);
-        transition: transform 0.3s ease;
-    }
-    
-    .profile-avatar:hover {
-        transform: scale(1.1);
-    }
-    
-    .online-status {
-        position: absolute;
-        bottom: 5px;
-        right: 5px;
-        width: 15px;
-        height: 15px;
-        background: #28a745;
-        border: 2px solid white;
-        border-radius: 50%;
-    }
-    
-    .btn-primary-gradient {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-        color: white;
-        transition: transform 0.3s ease;
-    }
-    
-    .btn-primary-gradient:hover {
-        transform: translateY(-2px);
-        color: white;
-    }
-    
-    .card {
-        border-radius: 20px;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        border: none;
-    }
-    
-    .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
-    }
-    
-    .form-control, .form-select {
-        border-radius: 12px;
-        border: 2px solid #e9ecef;
-        transition: all 0.3s ease;
-        padding: 12px 15px;
-    }
-    
-    .form-control:focus, .form-select:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 0.3rem rgba(102, 126, 234, 0.15);
-    }
-    
-    .input-group-text {
-        border-radius: 12px 0 0 12px;
-        background: #f8f9fa;
-        border: 2px solid #e9ecef;
-        border-right: none;
-    }
-    
-    .stats-item {
-        padding: 10px 0;
-        border-bottom: 1px solid #f1f3f4;
-    }
-    
-    .stats-item:last-child {
-        border-bottom: none;
-    }
-    
-    .progress {
-        border-radius: 10px;
-        height: 8px !important;
-    }
-    
-    .table th {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border: none;
-        font-weight: 600;
-        padding: 15px;
-    }
-    
-    .table td {
-        padding: 15px;
-        vertical-align: middle;
-    }
-    
-    .badge.rounded-pill {
-        padding: 8px 12px;
-        font-size: 0.8em;
-    }
-</style>
-{% endblock %}
-
-{% block extra_js %}
 <script>
     // Валидация формы
     (function () {
@@ -427,6 +291,20 @@
                 }, false)
             })
     })()
+
+    // Простая функция сброса (глобальная)
+    window.resetFormToOriginal = function() {
+        const form = document.querySelector('form.needs-validation');
+        form.reset();
+        
+        // Восстанавливаем значение страны
+        document.getElementById('id_country').value = "{{ user.country|default:'Россия' }}";
+        
+        // Сбрасываем валидацию
+        form.classList.remove('was-validated');
+        
+        alert('Изменения отменены. Форма возвращена к исходным значениям.');
+    }
     
     // Анимация появления элементов
     document.addEventListener('DOMContentLoaded', function() {

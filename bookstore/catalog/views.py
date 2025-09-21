@@ -4,22 +4,21 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q, Count, Prefetch, Sum, Value
-from django.db.models.functions import Lower, Concat
+from django.db.models import Q, Count, Prefetch, Sum
 from django.core.paginator import Paginator
 from .models import Book, Category, Author, Order, OrderItem, Cart, CartItem
-from .forms import LoginForm, RegisterForm, UserProfileForm, OrderForm
+from .forms import LoginForm, RegisterForm, UserProfileForm, OrderForm, BookForm, CategoryForm, AuthorForm, PublisherForm
 from django.contrib.auth.views import LoginView
 from django.contrib.admin.models import LogEntry
 from . serializers import *
-from rest_framework import generics, viewsets, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.decorators import action
 from rest_framework import generics, permissions, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
+from django.utils import timezone
+from datetime import timedelta
+
 
 def home(request):
     # Новые книги
@@ -53,9 +52,7 @@ def book_list(request):
             Q(author__first_name__icontains=query) |
             Q(author__last_name__icontains=query)
         )
-        
-        # Дополнительный поиск: если запрос в нижнем регистре, 
-        # ищем также с первой заглавной буквой
+        # с учетом регистра
         if query and query[0].islower():
             query_capitalized = query.capitalize()
             books = books | Book.objects.filter(
@@ -158,10 +155,13 @@ def profile(request):
         form = UserProfileForm(instance=request.user)
     
     orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    cart = Cart.objects.filter(user=request.user)
+    cartItems = cart[0].total_items
     
     context = {
         'form': form,
         'orders': orders,
+        'cartItems': cartItems,
     }
     return render(request, 'catalog/profile.html', context)
 
@@ -328,14 +328,6 @@ def admin_access_required(request):
         return HttpResponseForbidden("У вас нет прав доступа к админ-панели")
     return redirect('admin_statistics')
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.db.models import Count, Sum, Q
-from django.utils import timezone
-from datetime import timedelta
-from .models import User, Book, Category, Author, Publisher, Order
-from .forms import BookForm, CategoryForm, AuthorForm, PublisherForm
 
 def is_admin(user):
     # user может быть AnonymousUser, поэтому проверяем сначала is_authenticated
@@ -449,6 +441,9 @@ def admin_books(request):
     
     if search:
         books = books.filter(Q(title__icontains=search) | Q(isbn__icontains=search))
+    if search and search[0].islower():
+            search_capitalized = search.capitalize()
+            books = books | Book.objects.filter(Q(title__icontains=search_capitalized) | Q(isbn__icontains=search_capitalized))
     if category:
         books = books.filter(categories__id=category)
     if author:
@@ -944,7 +939,7 @@ class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
             Prefetch('items', queryset=OrderItem.objects.select_related('book'))
         )
 
-# Search
+# поиск
 class SearchAPIView(APIView):
     permission_classes = [permissions.AllowAny]
     

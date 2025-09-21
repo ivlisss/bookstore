@@ -104,12 +104,17 @@
 
                                 <div class="row align-items-center">
                                     <div class="col-6">
-                                        <form method="post" action="{% url 'update_cart' item.id %}">
+                                        <form method="post" action="{% url 'update_cart' item.id %}" class="quantity-form">
                                             {% csrf_token %}
                                             <label class="form-label small mb-1">Количество:</label>
-                                            <input type="number" name="quantity" value="{{ item.quantity }}" 
-                                                   min="1" max="{{ item.book.stock_quantity }}" 
-                                                   class="form-control form-control-sm">
+                                            <div class="d-flex align-items-center">
+                                                <input type="number" name="quantity" value="{{ item.quantity }}" 
+                                                       min="1" max="{{ item.book.stock_quantity }}" 
+                                                       class="form-control form-control-sm quantity-input">
+                                                <button type="submit" class="btn btn-sm btn-outline-primary ms-2 update-btn">
+                                                    <i class="fas fa-sync-alt"></i>
+                                                </button>
+                                            </div>
                                         </form>
                                     </div>
                                     <div class="col-6 text-end">
@@ -118,12 +123,6 @@
                                 </div>
 
                                 <div class="d-flex justify-content-between mt-3">
-                                    <form method="post" action="{% url 'update_cart' item.id %}">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-sync-alt me-1"></i>Обновить
-                                        </button>
-                                    </form>
                                     <form method="post" action="{% url 'remove_from_cart' item.id %}">
                                         {% csrf_token %}
                                         <button type="submit" class="btn btn-sm btn-outline-danger"
@@ -251,6 +250,15 @@
             width: 50px !important;
             height: 70px !important;
         }
+        
+        /* Специальные стили для мобильной версии */
+        .quantity-input {
+            width: 70px !important;
+        }
+        
+        .update-btn {
+            padding: 0.25rem 0.5rem;
+        }
     }
     
     @media (max-width: 575.98px) {
@@ -282,6 +290,10 @@
             width: 100%;
             margin-bottom: 0.5rem;
         }
+        
+        .quantity-input {
+            width: 60px !important;
+        }
     }
     
     /* Общие стили */
@@ -303,30 +315,4 @@
         background-color: #f8f9fa;
     }
 </style>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    // Автоматическое обновление количества при изменении
-    document.addEventListener('DOMContentLoaded', function() {
-        const quantityInputs = document.querySelectorAll('input[name="quantity"]');
-        quantityInputs.forEach(input => {
-            input.addEventListener('change', function() {
-                this.form.submit();
-            });
-        });
-        
-        // Для мобильной версии - обновление при вводе
-        const mobileQuantityInputs = document.querySelectorAll('.d-md-none input[name="quantity"]');
-        mobileQuantityInputs.forEach(input => {
-            let timeout;
-            input.addEventListener('input', function() {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => {
-                    this.form.submit();
-                }, 2000);
-            });
-        });
-    });
-</script>
 {% endblock %}
