@@ -663,9 +663,17 @@ def admin_author_delete(request, author_id):
     author = get_object_or_404(Author, id=author_id)
     
     if request.method == 'POST':
+        # Проверяем, есть ли у автора книги
+        if author.books.exists():
+            messages.error(request, 'Нельзя удалить автора, у которого есть книги!')
+            return redirect('admin_authors')
+        
         author.delete()
         messages.success(request, 'Автор удален!')
         return redirect('admin_authors')
+    
+    # Аннотируем количество книг для отображения в шаблоне
+    author.book_count = author.books.count()
     
     context = {
         'author': author,
@@ -706,6 +714,10 @@ def admin_publisher_delete(request, publisher_id):
     publisher = get_object_or_404(Publisher, id=publisher_id)
     
     if request.method == 'POST':
+        if publisher.books.exists():
+            messages.error(request, 'Нельзя удалить издательство, у которого есть книги!')
+            return redirect('admin_publishers')
+        
         publisher.delete()
         messages.success(request, 'Издательство удалено!')
         return redirect('admin_publishers')
