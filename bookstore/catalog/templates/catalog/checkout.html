@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Оформление заказа - Книжный магазин{% endblock %}
+{% block title %}Оформление заказа - Тайны страниц{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -37,14 +37,7 @@
                         <div class="mb-3">
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="delivery_method" 
-                                       id="delivery_pickup" value="pickup" checked>
-                                <label class="form-check-label" for="delivery_pickup">
-                                    Самовывоз (бесплатно)
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="delivery_method" 
-                                       id="delivery_delivery" value="delivery">
+                                       id="delivery_delivery" value="delivery" checked>
                                 <label class="form-check-label" for="delivery_delivery">
                                     Курьерская доставка (<span class="delivery-price-text">300 руб.</span>)
                                 </label>
@@ -53,16 +46,8 @@
                     </div>
 
                     <div class="mb-4">
-                        <h5 class="mb-3">Способ оплаты</h5>
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="radio" name="payment" id="payment1" value="card" checked>
-                            <label class="form-check-label" for="payment1">
-                                <strong>Банковская карта</strong>
-                                <br><small class="text-muted">Оплата онлайн</small>
-                            </label>
-                        </div>
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="radio" name="payment" id="payment2" value="cash">
+                            <input class="form-check-input" type="radio" name="payment" id="payment2" value="cash" checked>
                             <label class="form-check-label" for="payment2">
                                 <strong>Наличные при получении</strong>
                                 <br><small class="text-muted">Оплата курьеру или в пункте выдачи</small>

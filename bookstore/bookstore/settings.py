@@ -154,6 +154,6 @@ EMAIL_HOST_USER = 'formessage111@gmail.com'  # ваша почта
 EMAIL_HOST_PASSWORD = 'coth fdeu bgot wrvq'  # пароль приложения
 
 # Настройки сайта
-SITE_NAME = "Книжный магазин"
+SITE_NAME = "Тайны страниц"
 DOMAIN = "localhost:8000"  # ваш домен
 DEFAULT_FROM_EMAIL = 'noreply@yourdomain.com'
