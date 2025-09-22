@@ -48,7 +48,6 @@ def book_list(request):
         # Базовый поиск (без учета регистра)
         books = books.filter(
             Q(title__icontains=query) | 
-            Q(description__icontains=query) |
             Q(author__first_name__icontains=query) |
             Q(author__last_name__icontains=query)
         )
@@ -57,7 +56,6 @@ def book_list(request):
             query_capitalized = query.capitalize()
             books = books | Book.objects.filter(
                 Q(title__icontains=query_capitalized) | 
-                Q(description__icontains=query_capitalized) |
                 Q(author__first_name__icontains=query_capitalized) |
                 Q(author__last_name__icontains=query_capitalized)
             )
