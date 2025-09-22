@@ -712,20 +712,17 @@ def admin_publishers(request):
 @admin_required
 def admin_publisher_delete(request, publisher_id):
     publisher = get_object_or_404(Publisher, id=publisher_id)
+    publisher.book_count = publisher.books.count()
     
     if request.method == 'POST':
-        if publisher.books.exists():
-            messages.error(request, 'Нельзя удалить издательство, у которого есть книги!')
+        if publisher.book_count > 0:
+            messages.error(request, 'Нельзя удалить издательство с книгами!')
             return redirect('admin_publishers')
-        
         publisher.delete()
         messages.success(request, 'Издательство удалено!')
         return redirect('admin_publishers')
     
-    context = {
-        'publisher': publisher,
-    }
-    return render(request, 'admin/publisher_delete.html', context)
+    return render(request, 'admin/publisher_delete.html', {'publisher': publisher})
 
 
 # API
