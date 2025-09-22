@@ -11,20 +11,28 @@
         
         <!-- Поиск -->
         <div class="row justify-content-center">
-            <div class="col-12 col-md-8">
-                <form method="get" action="{% url 'book_list' %}" class="d-flex">
-                    <input class="form-control me-2" type="search" name="search" 
-                        placeholder="Поиск книг по названию, автору..." 
-                        value="{{ request.GET.search }}"
-                        aria-label="Поиск книг">
-                    <button class="btn btn-outline-white" type="submit">
-                        <i class="fas fa-search"></i> 
-                        <span class="d-none d-md-inline">Найти</span>
-                    </button>
-                </form>
-            </div>
-        </div>
+    <div class="col-12 col-md-8">
+        <div class="d-flex flex-column flex-md-row gap-2">
+            <!-- Форма поиска -->
+            <form method="get" action="{% url 'book_list' %}" class="d-flex flex-grow-1">
+                <input class="form-control me-2" type="search" name="search" 
+                    placeholder="Поиск книг по названию, автору..." 
+                    value="{{ request.GET.search }}"
+                    aria-label="Поиск книг">
+                <button class="btn btn-outline-white" type="submit">
+                    <i class="fas fa-search"></i> 
+                    <span class="d-none d-md-inline">Найти</span>
+                </button>
+            </form>
+            
+            <!-- Кнопка "Все книги" -->
+            <a href="{% url 'book_list' %}" class="btn btn-outline-white" style="padding: 20px;">
+                <i class="fas fa-book"></i>
+                <span class="d-none d-md-inline">Все книги</span>
+            </a>
+        </div>                    
     </div>
+</div>
 </section>
 
 <!-- Новые книги -->
