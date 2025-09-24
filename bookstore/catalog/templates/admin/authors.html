@@ -44,7 +44,7 @@
                                data-author-bio="{{ author.bio|default:'' }}">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <a href="{% url 'admin_author_delete' author.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Удалить автора {{ author.first_name }} {{ author.last_name }}?')">
+                            <a href="{% url 'admin_author_delete' author.id %}" class="btn btn-sm btn-outline-danger">
                                 <i class="fas fa-trash"></i>
                             </a>
                         </td>
