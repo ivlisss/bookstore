@@ -27,10 +27,11 @@
                     <tr>
                         <td>{{ category.name }}</td>
                         <td>{{ category.slug }}</td>
-                        <td>{{ category.book_count }}</td>
                         <td>
-                            <a href="{% url 'admin_category_delete' category.id %}" class="btn btn-sm btn-outline-danger"
-                               onclick="return confirmDelete('Удалить категорию {{ category.name }}?')">
+                            <span class="badge bg-primary">{{ category.book_count }}</span>
+                        </td>
+                        <td>
+                            <a href="{% url 'admin_category_delete' category.id %}" class="btn btn-sm btn-outline-danger">
                                 <i class="fas fa-trash"></i>
                             </a>
                         </td>
@@ -95,7 +96,6 @@
         </div>
     </div>
 </div>
-
 <style>
     .admin-form .modal-content {
         border-radius: 12px;

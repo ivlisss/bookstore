@@ -59,7 +59,7 @@
                 <i class="fas fa-times"></i> Нет в наличии
             </button>
             {% endif %}
-            <a href="{% url 'book_list' %}" class="btn btn-outline-secondary btn-lg" style="width: 246.562px;">
+            <a href="#" class="btn btn-outline-secondary btn-lg" style="width: 246.562px;" onclick="goBack()">
                 <i class="fas fa-arrow-left"></i> Назад
             </a>
         </div>
@@ -100,4 +100,16 @@
     </div>
 </div>
 {% endif %}
+
+<script>
+function goBack() {
+    // Если есть предыдущая страница в истории браузера
+    if (document.referrer && document.referrer !== window.location.href) {
+        window.location.href = document.referrer;
+    } else {
+        // Если нет предыдущей страницы, используем fallback URL
+        window.location.href = "{% url 'book_list' %}";
+    }
+}
+</script>
 {% endblock %}

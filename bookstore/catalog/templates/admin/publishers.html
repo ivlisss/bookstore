@@ -50,7 +50,7 @@
                                data-publisher-website="{{ publisher.website|default:'' }}">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <a href="{% url 'admin_publisher_delete' publisher.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Удалить издательство {{ publisher.name }}?')">
+                            <a href="{% url 'admin_publisher_delete' publisher.id %}" class="btn btn-sm btn-outline-danger">
                                 <i class="fas fa-trash"></i>
                             </a>
                         </td>
@@ -269,9 +269,5 @@ document.addEventListener('DOMContentLoaded', function() {
     // при следующем открытии данные загрузятся заново из data-атрибутов
 });
 
-// Функция для подтверждения удаления
-function confirmDelete(message) {
-    return confirm(message || 'Вы уверены, что хотите удалить это издательство?');
-}
 </script>
 {% endblock %}

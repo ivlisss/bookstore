@@ -3,30 +3,156 @@
 {% block page_title %}Удаление категории{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h4>Удаление категории</h4>
-            </div>
-            <div class="card-body text-center">
-                <div class="alert alert-danger">
-                    <h5><i class="fas fa-exclamation-triangle"></i> Внимание!</h5>
-                    <p>Вы собираетесь удалить категорию:</p>
-                    <h4>"{{ category.name }}"</h4>
-                    <p>Количество книг в категории: {{ category.book_count }}</p>
-                    <p>Это действие нельзя отменить!</p>
-                </div>
-                
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="d-flex gap-2 justify-content-center">
-                        <button type="submit" class="btn btn-danger">Удалить</button>
-                        <a href="{% url 'admin_categories' %}" class="btn btn-secondary">Отмена</a>
+<div class="delete-container">
+    <div class="delete-card">
+        <div class="delete-card-header">
+            <h1 class="delete-card-title">
+                <i class="fas fa-folder me-2"></i>Удаление категории
+            </h1>
+        </div>
+        
+        <div class="delete-card-body">
+            <div class="delete-alert {% if category.book_count > 0 %}delete-alert-warning{% else %}delete-alert-danger{% endif %}">
+                <div class="d-flex align-items-start">
+                    <i class="fas fa-exclamation-triangle delete-alert-icon"></i>
+                    <div class="delete-alert-content flex-grow-1">
+                        <h5>Внимание!</h5>
+                        <p>Вы собираетесь удалить категорию:</p>
+                        <h4>"{{ category.name }}"</h4>
+                        
+                        <div class="delete-details">
+                            <p><strong>Slug:</strong> {{ category.slug }}</p>
+                            <p><strong>Количество книг:</strong> {{ category.book_count }}</p>
+                            {% if category.description %}
+                            <p><strong>Описание:</strong> {{ category.description|truncatewords:20 }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        {% if category.book_count > 0 %}
+                        <div class="delete-alert delete-alert-info">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <div>
+                                    <strong>Есть книги принадлежащие данной категории!</strong><br>
+                                    В категории есть  книги(а). Рекомендуется сначала удалить или переназначить все книги этой категории.
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <p class="mb-0"><strong>Это действие нельзя отменить!</strong> Все данные категории будут безвозвратно удалены.</p>
+                        {% endif %}
                     </div>
+                </div>
+            </div>
+            
+            {% if category.book_count == 0 %}
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-flex gap-3 justify-content-center">
+                    <button type="submit" class="delete-btn delete-btn-danger">
+                        <i class="fas fa-trash me-2"></i>Удалить категорию
+                    </button>
+                    <a href="{% url 'admin_categories' %}" class="delete-btn delete-btn-secondary">
+                        <i class="fas fa-times me-2"></i>Отмена
+                    </a>
+                </div>
+            </form>
+            {% else %}
+            <div class="d-flex gap-3 justify-content-center">
+                <a href="{% url 'admin_categories' %}" class="delete-btn delete-btn-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Вернуться к списку категорий
+                </a>
+                <a href="{% url 'admin_books' %}?category={{ category.id }}" class="delete-btn delete-btn-info">
+                    <i class="fas fa-book me-2"></i>Посмотреть книги категории
+                </a>
+                 <form method="post">
+                {% csrf_token %}
+                 <button type="submit" class="delete-btn delete-btn-danger">
+                        <i class="fas fa-trash me-2"></i> Всё равно удалить 
+                    </button>
                 </form>
             </div>
+            {% endif %}
         </div>
     </div>
 </div>
+<style>
+/* Общие стили для страниц удаления */
+.delete-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.delete-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.delete-card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem 2rem;
+    border: none;
+}
+
+.delete-card-title {
+    font-weight: 600;
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.delete-card-body {
+    padding: 2rem;
+}
+
+.delete-alert {
+    border: none;
+    border-radius: 12px;
+    border-left: 5px solid;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.delete-alert-warning {
+    border-left-color: #ffc107;
+    background: linear-gradient(135deg, #fffaf0 0%, #fff5e6 100%);
+}
+
+.delete-alert-danger {
+    border-left-color: #dc3545;
+    background: linear-gradient(135deg, #fff5f5 0%, #ffe6e6 100%);
+}
+
+.delete-alert-info {
+    border-left-color: #0dcaf0;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 100%);
+}
+
+.delete-alert-icon {
+    font-size: 2rem;
+    margin-right: 1rem;
+}
+
+.delete-alert-content h5 {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #2d3748;
+}
+
+.delete-alert-content h4 {
+    color: #2d3748;
+    margin: 1rem 0;
+    font-weight: 700;
+}
+
+.delete-details {
+    background: rgba(255,255,255,0.8);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+</style>
 {% endblock %}

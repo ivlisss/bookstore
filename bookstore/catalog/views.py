@@ -612,17 +612,14 @@ def admin_categories(request):
 @admin_required
 def admin_category_delete(request, category_id):
     category = get_object_or_404(Category, id=category_id)
+    category.book_count = category.books.count()  # Подсчитываем количество книг
     
     if request.method == 'POST':
         category.delete()
         messages.success(request, 'Категория удалена!')
         return redirect('admin_categories')
     
-    context = {
-        'category': category,
-    }
-    
-    return render(request, 'admin/category_delete.html', context)
+    return render(request, 'admin/category_delete.html', {'category': category})
 
 @admin_required
 def admin_authors(request):
