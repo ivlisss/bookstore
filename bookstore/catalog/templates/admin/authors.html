@@ -33,77 +33,22 @@
                             <span class="badge bg-primary">{{ author.book_count }}</span>
                         </td>
                         <td>
-                            <a href="#" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editAuthorModal{{ author.id }}">
+                            <a href="#" class="btn btn-sm btn-outline-primary" 
+                               data-bs-toggle="modal" 
+                               data-bs-target="#editAuthorModal"
+                               data-author-id="{{ author.id }}"
+                               data-author-first-name="{{ author.first_name }}"
+                               data-author-last-name="{{ author.last_name }}"
+                               data-author-birth-date="{{ author.birth_date|date:'Y-m-d' }}"
+                               data-author-website="{{ author.website|default:'' }}"
+                               data-author-bio="{{ author.bio|default:'' }}">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <a href="{% url 'admin_author_delete' author.id %}" class="btn btn-sm btn-outline-danger">
+                            <a href="{% url 'admin_author_delete' author.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Удалить автора {{ author.first_name }} {{ author.last_name }}?')">
                                 <i class="fas fa-trash"></i>
                             </a>
                         </td>
                     </tr>
-
-                    
-
-                    <!-- Модальное окно редактирования автора -->
-                    <div class="modal fade" id="editAuthorModal{{ author.id }}" tabindex="-1">
-                        <div class="modal-dialog modal-lg">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Редактировать автора</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <form method="post" action="{% url 'admin_authors' %}" class="admin-form">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="author_id" value="{{ author.id }}">
-                                        
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Имя *</label>
-                                                    <input type="text" name="first_name" class="form-control" value="{{ author.first_name }}" required>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Фамилия *</label>
-                                                    <input type="text" name="last_name" class="form-control" value="{{ author.last_name }}" required>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Дата рождения</label>
-                                                    <input type="date" name="birth_date" class="form-control" value="{{ author.birth_date|date:'Y-m-d' }}">
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Веб-сайт</label>
-                                                    <input type="url" name="website" class="form-control" value="{{ author.website }}">
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label class="form-label">Биография</label>
-                                            <textarea name="bio" class="form-control" rows="4">{{ author.bio }}</textarea>
-                                        </div>
-
-                                        <div class="d-flex gap-2 pt-3 border-top">
-                                            <button type="submit" class="btn btn-primary" name="edit_author">
-                                                <i class="fas fa-save me-2"></i>Сохранить изменения
-                                            </button>
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
                     {% empty %}
                     <tr>
                         <td colspan="5" class="text-center py-4">Авторы не найдены</td>
@@ -124,7 +69,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form method="post" action="{% url 'admin_authors' %}" class="admin-form">
+                <form method="post" action="{% url 'admin_authors' %}" class="admin-form" id="addAuthorForm">
                     {% csrf_token %}
                     
                     <div class="row">
@@ -165,6 +110,66 @@
                     <div class="d-flex gap-2 pt-3 border-top">
                         <button type="submit" class="btn btn-primary" name="add_author">
                             <i class="fas fa-plus-circle me-2"></i>Добавить автора
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Единое модальное окно редактирования автора -->
+<div class="modal fade" id="editAuthorModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Редактировать автора</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'admin_authors' %}" class="admin-form" id="editAuthorForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="author_id" id="editAuthorId">
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Имя *</label>
+                                <input type="text" name="first_name" class="form-control" id="editAuthorFirstName" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Фамилия *</label>
+                                <input type="text" name="last_name" class="form-control" id="editAuthorLastName" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Дата рождения</label>
+                                <input type="date" name="birth_date" class="form-control" id="editAuthorBirthDate">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Веб-сайт</label>
+                                <input type="url" name="website" class="form-control" id="editAuthorWebsite">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Биография</label>
+                        <textarea name="bio" class="form-control" rows="4" id="editAuthorBio"></textarea>
+                    </div>
+
+                    <div class="d-flex gap-2 pt-3 border-top">
+                        <button type="submit" class="btn btn-primary" name="edit_author">
+                            <i class="fas fa-save me-2"></i>Сохранить изменения
                         </button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
                     </div>
@@ -285,4 +290,54 @@
     }
 </style>
 
+<script>
+// Функция для сброса формы добавления
+function resetAddForm() {
+    const form = document.getElementById('addAuthorForm');
+    if (form) {
+        form.reset();
+    }
+}
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    // Сброс формы добавления при закрытии модального окна
+    const addModal = document.getElementById('addAuthorModal');
+    if (addModal) {
+        addModal.addEventListener('hidden.bs.modal', function() {
+            resetAddForm();
+        });
+    }
+
+    // Обработка открытия модального окна редактирования
+    const editButtons = document.querySelectorAll('[data-bs-target="#editAuthorModal"]');
+    editButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            // Получаем данные из data-атрибутов кнопки
+            const authorId = this.getAttribute('data-author-id');
+            const authorFirstName = this.getAttribute('data-author-first-name');
+            const authorLastName = this.getAttribute('data-author-last-name');
+            const authorBirthDate = this.getAttribute('data-author-birth-date');
+            const authorWebsite = this.getAttribute('data-author-website');
+            const authorBio = this.getAttribute('data-author-bio');
+            
+            // Заполняем форму редактирования актуальными данными
+            document.getElementById('editAuthorId').value = authorId;
+            document.getElementById('editAuthorFirstName').value = authorFirstName;
+            document.getElementById('editAuthorLastName').value = authorLastName;
+            document.getElementById('editAuthorBirthDate').value = authorBirthDate;
+            document.getElementById('editAuthorWebsite').value = authorWebsite;
+            document.getElementById('editAuthorBio').value = authorBio;
+        });
+    });
+
+    // При закрытии модального окна редактирования ничего не делаем - 
+    // при следующем открытии данные загрузятся заново из data-атрибутов
+});
+
+// Функция для подтверждения удаления
+function confirmDelete(message) {
+    return confirm(message || 'Вы уверены, что хотите удалить этого автора?');
+}
+</script>
 {% endblock %}

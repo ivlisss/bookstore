@@ -62,8 +62,7 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label">Название *</label>
-                                <input type="text" name="name" class="form-control" id="categoryName" required
-                                       oninput="generateSlug()">
+                                <input type="text" name="name" class="form-control" id="categoryName" required>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -71,7 +70,7 @@
                                 <label class="form-label">Slug *</label>
                                 <div class="input-group">
                                     <input type="text" name="slug" class="form-control" id="categorySlug" required>
-                                    <button type="button" class="btn btn-outline-secondary" onclick="generateSlug()">
+                                    <button type="button" class="btn btn-outline-secondary" id="generateSlugBtn">
                                         <i class="fas fa-sync-alt"></i>
                                     </button>
                                 </div>
@@ -218,10 +217,8 @@
 </style>
 
 <script>
-// Функция для генерации slug из текста
-function generateSlug() {
-    const nameInput = document.getElementById('categoryName');
-    const slugInput = document.getElementById('categorySlug');
+// Функция для создания slug из текста
+function createSlug(text) {
     const ruToEnMap = {
         'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo', 'ж': 'zh',
         'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o',
@@ -229,10 +226,8 @@ function generateSlug() {
         'ч': 'ch', 'ш': 'sh', 'щ': 'shch', 'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu',
         'я': 'ya'
     };
-    
-    // Генерируем slug только если поле slug пустое или пользователь не редактировал его вручную
-    if (nameInput.value && (!slugInput.value || slugInput.value === slugInput.defaultValue)) {
-        let slug = nameInput.value
+
+    let slug = text
         .toLowerCase() // 1. Приводим к нижнему регистру
         .trim() // 2. Убираем пробелы в начале и конце
         // 3. Транслитерируем русские буквы
@@ -246,31 +241,52 @@ function generateSlug() {
         .replace(/[\s]+/g, '-') // Заменяем пробелы на дефисы
         .replace(/[-]+/g, '-') // Убираем повторяющиеся дефисы
         .replace(/^-+|-+$/g, ''); // Убираем дефисы в начале и конце
-        slugInput.value = slug;
-    }
+
+    return slug;
 }
 
-// Обработчик для ручного редактирования slug
-document.getElementById('categorySlug').addEventListener('input', function() {
-    this.defaultValue = this.value; // Сохраняем текущее значение как "ручное"
-});
-
-// Сброс при закрытии модального окна
-document.getElementById('addCategoryModal').addEventListener('hidden.bs.modal', function() {
-    const form = document.getElementById('categoryForm');
-    form.reset();
+document.addEventListener('DOMContentLoaded', function() {
+    // Элементы формы для категорий
+    const titleInput = document.getElementById('categoryName');
     const slugInput = document.getElementById('categorySlug');
-    slugInput.defaultValue = ''; // Сбрасываем ручное значение
-});
-
-// Автоматическая генерация при открытии модального окна, если есть значение
-document.getElementById('addCategoryModal').addEventListener('show.bs.modal', function() {
-    const nameInput = document.getElementById('categoryName');
-    const slugInput = document.getElementById('categorySlug');
+    const generateSlugBtn = document.getElementById('generateSlugBtn');
     
-    if (nameInput.value && !slugInput.value) {
-        generateSlug();
+    if (titleInput && slugInput) {
+        let isSlugManual = false;
+        
+        // Отслеживаем ручное изменение slug
+        slugInput.addEventListener('input', function() {
+            isSlugManual = true;
+        });
+        
+        // Обновляем slug при изменении названия (если slug не был изменен вручную)
+        titleInput.addEventListener('input', function() {
+            if (!isSlugManual) {
+                slugInput.value = createSlug(titleInput.value);
+            }
+        });
+        
+        // Кнопка для перегенерации slug
+        if (generateSlugBtn) {
+            generateSlugBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                slugInput.value = createSlug(titleInput.value);
+                isSlugManual = false;
+            });
+        }
+        
+        // Также обновляем slug при загрузке страницы, если название уже есть
+        if (titleInput.value && !slugInput.value) {
+            slugInput.value = createSlug(titleInput.value);
+        }
     }
+    
+    // Сброс при закрытии модального окна
+    document.getElementById('addCategoryModal').addEventListener('hidden.bs.modal', function() {
+        const form = document.getElementById('categoryForm');
+        form.reset();
+        isSlugManual = false;
+    });
 });
 
 // Валидация slug при отправке формы
@@ -282,11 +298,18 @@ document.getElementById('categoryForm').addEventListener('submit', function(e) {
     slug = slug
         .toLowerCase()
         .trim()
-        .replace(/[^a-z0-9а-яё-]/g, '-') // Заменяем все недопустимые символы на дефисы
-        .replace(/[-]+/g, '-') // Убираем повторяющиеся дефисы
-        .replace(/^-+|-+$/g, ''); // Убираем дефисы в начале и конце
+        .replace(/[^a-z0-9а-яё-]/g, '-')
+        .replace(/[-]+/g, '-')
+        .replace(/^-+|-+$/g, '');
     
     slugInput.value = slug;
+    
+    // Проверяем, что slug не пустой
+    if (!slug) {
+        e.preventDefault();
+        alert('Пожалуйста, введите slug или сгенерируйте его из названия');
+        slugInput.focus();
+    }
 });
 
 // Функция для подтверждения удаления

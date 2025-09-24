@@ -41,49 +41,20 @@
                             <span class="badge bg-primary">{{ publisher.book_count }}</span>
                         </td>
                         <td>
-                            <a href="#" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editPublisherModal{{ publisher.id }}">
+                            <a href="#" class="btn btn-sm btn-outline-primary" 
+                               data-bs-toggle="modal" 
+                               data-bs-target="#editPublisherModal"
+                               data-publisher-id="{{ publisher.id }}"
+                               data-publisher-name="{{ publisher.name }}"
+                               data-publisher-address="{{ publisher.address|default:'' }}"
+                               data-publisher-website="{{ publisher.website|default:'' }}">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <a href="{% url 'admin_publisher_delete' publisher.id %}" class="btn btn-sm btn-outline-danger">
+                            <a href="{% url 'admin_publisher_delete' publisher.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Удалить издательство {{ publisher.name }}?')">
                                 <i class="fas fa-trash"></i>
                             </a>
                         </td>
                     </tr>
-
-                    <!-- Модальное окно редактирования издательства -->
-                    <div class="modal fade" id="editPublisherModal{{ publisher.id }}" tabindex="-1">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Редактировать издательство</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <form method="post" action="{% url 'admin_publishers' %}">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="publisher_id" value="{{ publisher.id }}">
-                                        <div class="mb-3">
-                                            <label class="form-label">Название *</label>
-                                            <input type="text" name="name" class="form-control" value="{{ publisher.name }}" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Адрес</label>
-                                            <textarea name="address" class="form-control" rows="3">{{ publisher.address }}</textarea>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Веб-сайт</label>
-                                            <input type="url" name="website" class="form-control" value="{{ publisher.website }}">
-                                        </div>
-                                        <div class="d-flex gap-2">
-                                            <button type="submit" class="btn btn-primary" name="edit_publisher">Сохранить</button>
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     {% empty %}
                     <tr>
                         <td colspan="5" class="text-center py-4">Издательства не найдены</td>
@@ -104,7 +75,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form method="post" action="{% url 'admin_publishers' %}">
+                <form method="post" action="{% url 'admin_publishers' %}" id="addPublisherForm">
                     {% csrf_token %}
                     <div class="mb-3">
                         <label class="form-label">Название *</label>
@@ -120,6 +91,41 @@
                     </div>
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary" name="add_publisher">Добавить</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Единое модальное окно редактирования издательства -->
+<div class="modal fade" id="editPublisherModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Редактировать издательство</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'admin_publishers' %}" id="editPublisherForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="publisher_id" id="editPublisherId">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Название *</label>
+                        <input type="text" name="name" class="form-control" id="editPublisherName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Адрес</label>
+                        <textarea name="address" class="form-control" rows="3" id="editPublisherAddress"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Веб-сайт</label>
+                        <input type="url" name="website" class="form-control" id="editPublisherWebsite">
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary" name="edit_publisher">Сохранить</button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
                     </div>
                 </form>
@@ -221,4 +227,51 @@
         transform: translateY(-1px);
     }
 </style>
+
+<script>
+// Функция для сброса формы добавления
+function resetAddForm() {
+    const form = document.getElementById('addPublisherForm');
+    if (form) {
+        form.reset();
+    }
+}
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    // Сброс формы добавления при закрытии модального окна
+    const addModal = document.getElementById('addPublisherModal');
+    if (addModal) {
+        addModal.addEventListener('hidden.bs.modal', function() {
+            resetAddForm();
+        });
+    }
+
+    // Обработка открытия модального окна редактирования
+    const editButtons = document.querySelectorAll('[data-bs-target="#editPublisherModal"]');
+    editButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            // Получаем данные из data-атрибутов кнопки
+            const publisherId = this.getAttribute('data-publisher-id');
+            const publisherName = this.getAttribute('data-publisher-name');
+            const publisherAddress = this.getAttribute('data-publisher-address');
+            const publisherWebsite = this.getAttribute('data-publisher-website');
+            
+            // Заполняем форму редактирования актуальными данными
+            document.getElementById('editPublisherId').value = publisherId;
+            document.getElementById('editPublisherName').value = publisherName;
+            document.getElementById('editPublisherAddress').value = publisherAddress;
+            document.getElementById('editPublisherWebsite').value = publisherWebsite;
+        });
+    });
+
+    // При закрытии модального окна редактирования ничего не делаем - 
+    // при следующем открытии данные загрузятся заново из data-атрибутов
+});
+
+// Функция для подтверждения удаления
+function confirmDelete(message) {
+    return confirm(message || 'Вы уверены, что хотите удалить это издательство?');
+}
+</script>
 {% endblock %}
